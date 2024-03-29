@@ -1,7 +1,9 @@
+import { Sidebar } from "@/components/sidebar";
+import { TopBar } from "@/components/topbar";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 
 const raleway = Raleway({
   subsets: ["latin"],
@@ -26,7 +28,15 @@ export default function RootLayout({
           raleway.variable,
         )}
       >
-        {children}
+        <div className="container mx-auto">
+          <div className="flex">
+            <Sidebar />
+            <div className="w-full">
+              <TopBar />
+              {children}
+            </div>
+          </div>
+        </div>
       </body>
     </html>
   );
