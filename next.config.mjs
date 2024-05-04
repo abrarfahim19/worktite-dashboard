@@ -7,6 +7,12 @@ const nextConfig = {
                 hostname: 'images.pexels.com',
                 port: '',
                 pathname: '/photos/**',
+            },
+            {
+                protocol: 'https',
+                hostname: 'github.com',
+                port: '',
+                pathname: '/**',
             }
         ]
     }

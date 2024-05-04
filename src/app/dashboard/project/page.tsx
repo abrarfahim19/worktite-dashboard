@@ -140,6 +140,7 @@ const projectData = [
     ],
   },
 ];
+
 const Page = () => {
   const [activeTab, setActiveTab] = useState(projectData[0].value);
   const handleTabChange = (tab: string) => {
@@ -200,7 +201,7 @@ const Page = () => {
 
 export default Page;
 
-export function TableProjects({ items }: { items: IItems[] }) {
+function TableProjects({ items }: { items: IItems[] }) {
   return (
     <Table className="">
       <TableHeader>

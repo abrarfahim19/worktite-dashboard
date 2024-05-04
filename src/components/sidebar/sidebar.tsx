@@ -28,7 +28,7 @@ const SideBarBottomMenus = [
     activeIcon: <Icons.settingsActive color="red" className="h-4 w-4" />,
     inactiveIcon: <Icons.settingsInactive className="h-4 w-4" />,
     name: "Settings",
-    path: "/settings",
+    path: "/dashboard/settings",
   },
   {
     activeIcon: <Icons.logoutActive className="h-4 w-4" />,
@@ -49,7 +49,7 @@ const SideBarTopMenus = [
     activeIcon: <Icons.designActive color="red" className="h-4 w-4" />,
     inactiveIcon: <Icons.designInactive className="h-4 w-4" />,
     name: "Worktite design",
-    path: "/worktite-design",
+    path: "/dashboard/designs",
   },
   {
     activeIcon: <Icons.projectActive className="h-4 w-4" />,
@@ -62,19 +62,19 @@ const SideBarTopMenus = [
     activeIcon: <Icons.appointementActive className="h-4 w-4" />,
     inactiveIcon: <Icons.appointmentInactive className="h-4 w-4" />,
     name: "Appointment",
-    path: "/appointment",
+    path: "/dashboard/appointment",
   },
   {
     activeIcon: <Icons.calenderActive className="h-4 w-4" />,
     inactiveIcon: <Icons.calenderInactive className="h-4 w-4" />,
     name: "Calender",
-    path: "/calender",
+    path: "/dashboard/calender",
   },
   {
     activeIcon: <Icons.ourClientActive className="h-4 w-4" />,
     inactiveIcon: <Icons.ourClientInactive className="h-4 w-4" />,
     name: "Our Client",
-    path: "/client",
+    path: "/dashboard/clients",
   },
 ];
 

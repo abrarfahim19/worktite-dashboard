@@ -1,7 +1,9 @@
 import { Icons } from "@/lib/utils";
 import { format } from "date-fns";
+import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
+import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 const TopBarData = {
   numberOfAppointments: 5,
@@ -30,16 +32,24 @@ export const TopBar = () => {
       </div>
       <div className="col-span-1 flex items-center justify-end gap-6">
         <div className="relative">
-          <Icons.bell className="h-6 w-6" />
-          <Badge className="absolute right-[-8px] top-[-8px] rounded-full">
-            {TopBarData.numberOfNotification}
-          </Badge>
+          <Link href={"/dashboard/notification"}>
+            <Button variant={"ghost"}>
+              <Icons.bell className="h-6 w-6" />
+              <Badge className="absolute right-[-1px] top-[-1px] rounded-full">
+                {TopBarData.numberOfNotification}
+              </Badge>
+            </Button>
+          </Link>
         </div>
-        <Avatar className="h-12 w-12">
-          <AvatarImage src={TopBarData.userImage} />
-          <AvatarFallback>CN</AvatarFallback>
-        </Avatar>
-        <p className="text-xl font-semibold">{TopBarData.userName}</p>
+        <Link href={"/dashboard/profile"}>
+          <div className="flex items-center gap-2">
+            <Avatar className="h-12 w-12">
+              <AvatarImage src={TopBarData.userImage} />
+              <AvatarFallback>CN</AvatarFallback>
+            </Avatar>
+            <p className="text-xl font-semibold">{TopBarData.userName}</p>
+          </div>
+        </Link>
       </div>
     </div>
   );
