@@ -16,9 +16,14 @@ interface IFramework {
   label: string;
 }
 
-export const Combobox = ({ combobox }: { combobox: IFramework[] }) => {
+interface IComboboxProps {
+  combobox: IFramework[];
+  value: string;
+  setValue: (value: string) => void;
+}
+
+export const Combobox = ({ combobox, value, setValue }: IComboboxProps) => {
   const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState(combobox[0].value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -37,8 +42,6 @@ export const Combobox = ({ combobox }: { combobox: IFramework[] }) => {
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
         <Command>
-          {/* <CommandInput placeholder="Search framework..." /> */}
-          {/* <CommandEmpty>No framework found.</CommandEmpty> */}
           <CommandGroup>
             {combobox.map((item) => (
               <Button

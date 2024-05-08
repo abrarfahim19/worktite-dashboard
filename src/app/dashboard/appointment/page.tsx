@@ -2,6 +2,17 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
   Table,
   TableBody,
   TableCell,
@@ -10,6 +21,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Icons } from "@/lib/utils";
 import { format } from "date-fns";
 import Image from "next/image";
@@ -90,11 +102,128 @@ const requestedAppointmentData = [
   },
 ];
 
-const scheduleAppointmentData = [];
+const scheduleAppointmentData = [
+  {
+    id: "abcd",
+    clientData: {
+      name: "Courney Henry",
+      imageUrl: "https://github.com/shadcn.png",
+      email: "example@email.com",
+      date: 1713972946,
+    },
+    startTimestamp: 1713972846,
+    endTimestamp: 1713972946,
+    messageID: "abcd",
+    notes: [
+      {
+        id: "abcdefg",
+        date: 1713972946,
+        text: "This is a note",
+      },
+    ],
+  },
+  {
+    id: "abcd",
+    clientData: {
+      name: "Courney Henry",
+      imageUrl: "https://github.com/shadcn.png",
+      email: "example@email.com",
+      date: 1713972946,
+    },
+    startTimestamp: 1713972846,
+    endTimestamp: 1713972946,
+    messageID: "abcd",
+    notes: [
+      {
+        id: "abcdefg",
+        date: 1713972946,
+        text: "This is a note",
+      },
+    ],
+  },
+];
 
-const finishedAppointmentData = [];
+const finishedAppointmentData = [
+  {
+    id: "abcd",
+    clientData: {
+      name: "Courney Henry",
+      imageUrl: "https://github.com/shadcn.png",
+      email: "example@email.com",
+      date: 1713972946,
+    },
+    startTimestamp: 1713972846,
+    endTimestamp: 1713972946,
+    messageID: "abcd",
+    notes: [
+      {
+        id: "abcdefg",
+        date: 1713972946,
+        text: "This is a note",
+      },
+    ],
+  },
+  {
+    id: "abcd",
+    clientData: {
+      name: "Courney Henry",
+      imageUrl: "https://github.com/shadcn.png",
+      email: "example@email.com",
+      date: 1713972946,
+    },
+    startTimestamp: 1713972846,
+    endTimestamp: 1713972946,
+    messageID: "abcd",
+    notes: [
+      {
+        id: "abcdefg",
+        date: 1713972946,
+        text: "This is a note",
+      },
+    ],
+  },
+];
 
-const canceledAppointmentData = [];
+const canceledAppointmentData = [
+  {
+    id: "abcd",
+    clientData: {
+      name: "Courney Henry",
+      imageUrl: "https://github.com/shadcn.png",
+      email: "example@email.com",
+      date: 1713972946,
+    },
+    startTimestamp: 1713972846,
+    endTimestamp: 1713972946,
+    messageID: "abcd",
+    notes: [
+      {
+        id: "abcdefg",
+        date: 1713972946,
+        text: "This is a note",
+      },
+    ],
+  },
+  {
+    id: "abcd",
+    clientData: {
+      name: "Courney Henry",
+      imageUrl: "https://github.com/shadcn.png",
+      email: "example@email.com",
+      date: 1713972946,
+    },
+    startTimestamp: 1713972846,
+    endTimestamp: 1713972946,
+    messageID: "abcd",
+    notes: [
+      {
+        id: "abcdefg",
+        date: 1713972946,
+        text: "This is a note",
+      },
+    ],
+  },
+];
 
 const Page = () => {
   const [activeTab, setActiveTab] = useState(appointmentData[0].value);
@@ -256,83 +385,389 @@ const RequestedAppointment = () => {
 };
 
 const ScheduledAppointment = () => {
-  return <div>ScheduledAppointment</div>;
+  return (
+    <div>
+      <Table className="">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-center font-bold text-black">
+              Client
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Email
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Date and time
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Message
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Notes
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Accept
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Decline
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {scheduleAppointmentData.map((item) => {
+            const startDate = format(
+              new Date(item.startTimestamp * 1000),
+              "do MMM, yyyy ha",
+            );
+            const endDate = format(new Date(item.endTimestamp * 1000), "ha");
+            return (
+              <TableRow key={item.id}>
+                <TableCell className="text-center font-medium">
+                  <div className="flex gap-2">
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full">
+                      <Image
+                        layout="fill"
+                        objectFit="cover"
+                        quality={100}
+                        src={item.clientData.imageUrl}
+                        alt="project image"
+                      />
+                    </div>
+                    <div className="flex flex-col items-start justify-center">
+                      <p className="font-bold">{item.clientData.name}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center font-medium">
+                  {item.clientData.email}
+                </TableCell>
+                <TableCell className="text-center">
+                  {startDate}-{endDate}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant={"link"}
+                    className="bg-brand_100 bg-opacity-50"
+                  >
+                    <Icons.messageNew className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant={"link"}
+                    className="bg-brand_100 bg-opacity-50"
+                  >
+                    <Icons.addNote className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant={"outline"}
+                    className="border-brand text-brand"
+                  >
+                    Start
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button variant={"ghost"} className="text-brand">
+                    <p className="underline">Finish</p>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
 };
 
 const FinishedAppointment = () => {
-  return <div>FinishedAppointment</div>;
+  return (
+    <div>
+      <Table className="">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-center font-bold text-black">
+              Client
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Email
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Date and time
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Message
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Notes
+            </TableHead>
+            <TableHead className="text-center font-bold text-black"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {finishedAppointmentData.map((item) => {
+            const startDate = format(
+              new Date(item.startTimestamp * 1000),
+              "do MMM, yyyy ha",
+            );
+            const endDate = format(new Date(item.endTimestamp * 1000), "ha");
+            return (
+              <TableRow key={item.id}>
+                <TableCell className="text-center font-medium">
+                  <div className="flex gap-2">
+                    <div className="flex items-center justify-center">
+                      <Icons.delete className="h-5 w-5" />
+                    </div>
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full">
+                      <Image
+                        layout="fill"
+                        objectFit="cover"
+                        quality={100}
+                        src={item.clientData.imageUrl}
+                        alt="project image"
+                      />
+                    </div>
+                    <div className="flex flex-col items-start justify-center">
+                      <p className="font-bold">{item.clientData.name}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center font-medium">
+                  {item.clientData.email}
+                </TableCell>
+                <TableCell className="text-center">
+                  {startDate}-{endDate}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant={"link"}
+                    className="bg-brand_100 bg-opacity-50"
+                  >
+                    <Icons.messageNew className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center">
+                  <MeetingNoteDialog />
+                </TableCell>
+                <TableCell className="text-center">
+                  <CreateAccountDialog />
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
 };
 
 const CanceledAppointment = () => {
-  return <div>CanceledAppointment</div>;
+  return (
+    <div>
+      <Table className="">
+        <TableHeader>
+          <TableRow>
+            <TableHead className="text-center font-bold text-black">
+              Client
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Email
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Date and time
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Message
+            </TableHead>
+            <TableHead className="text-center font-bold text-black">
+              Notes
+            </TableHead>
+            <TableHead className="text-center font-bold text-black"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {canceledAppointmentData.map((item) => {
+            const startDate = format(
+              new Date(item.startTimestamp * 1000),
+              "do MMM, yyyy ha",
+            );
+            const endDate = format(new Date(item.endTimestamp * 1000), "ha");
+            return (
+              <TableRow key={item.id}>
+                <TableCell className="text-center font-medium">
+                  <div className="flex gap-2">
+                    <div className="flex items-center justify-center">
+                      <Icons.delete className="h-5 w-5" />
+                    </div>
+                    <div className="relative h-12 w-12 overflow-hidden rounded-full">
+                      <Image
+                        layout="fill"
+                        objectFit="cover"
+                        quality={100}
+                        src={item.clientData.imageUrl}
+                        alt="project image"
+                      />
+                    </div>
+                    <div className="flex flex-col items-start justify-center">
+                      <p className="font-bold">{item.clientData.name}</p>
+                    </div>
+                  </div>
+                </TableCell>
+                <TableCell className="text-center font-medium">
+                  {item.clientData.email}
+                </TableCell>
+                <TableCell className="text-center">
+                  {startDate}-{endDate}
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant={"link"}
+                    className="bg-brand_100 bg-opacity-50"
+                  >
+                    <Icons.messageNew className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant={"link"}
+                    className="bg-brand_100 bg-opacity-50"
+                  >
+                    <Icons.addNote className="h-4 w-4" />
+                  </Button>
+                </TableCell>
+                <TableCell className="text-center">
+                  <Button
+                    variant={"outline"}
+                    size={"lg"}
+                    className="border-brand text-brand"
+                  >
+                    Remove
+                  </Button>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </TableBody>
+      </Table>
+    </div>
+  );
 };
-// function TableProjects({ items }: { items: IItems[] }) {
-//   return (
-//     <Table className="">
-//       <TableHeader>
-//         <TableRow>
-//           <TableHead className="text-center font-bold text-black">
-//             Projects
-//           </TableHead>
-//           <TableHead className="text-center font-bold text-black">
-//             Acc no
-//           </TableHead>
-//           <TableHead className="text-center font-bold text-black">
-//             Category
-//           </TableHead>
-//           <TableHead className="text-center font-bold text-black">
-//             No of Projects
-//           </TableHead>
-//           <TableHead className="text-center font-bold text-black">
-//             Project starting date
-//           </TableHead>
-//           <TableHead className="text-center font-bold text-black">
-//             Status
-//           </TableHead>
-//           <TableHead className="text-center font-bold text-black">
-//             Details
-//           </TableHead>
-//         </TableRow>
-//       </TableHeader>
-//       <TableBody>
-//         {items.map((item) => (
-//           <TableRow key={item.accountNo}>
-//             <TableCell className="text-center font-medium">
-//               <div className="flex gap-2">
-//                 <div className="relative h-12 w-12">
-//                   <Image
-//                     layout="fill"
-//                     objectFit="cover"
-//                     quality={100}
-//                     src={item.projectImage}
-//                     alt="project image"
-//                   />
-//                 </div>
-//                 <div className="flex flex-col items-start justify-center">
-//                   <p className="font-bold">{item.name}</p>
-//                   <p>Pricing type: {item.projectType}</p>
-//                 </div>
-//               </div>
-//             </TableCell>
-//             <TableCell className="text-center font-medium">
-//               {item.accountNo}
-//             </TableCell>
-//             <TableCell className="text-center">{item.category}</TableCell>
-//             <TableCell className="text-center">{item.noOfProjects}</TableCell>
-//             <TableCell className="text-center">
-//               {item.projectStartingDate}
-//             </TableCell>
-//             <TableCell className="text-center">
-//               {item.projectStartingDate}
-//             </TableCell>
-//             <TableCell className="text-center">
-//               <Link href={`/dashboard/project/${item.projectID}`}>
-//                 <Button variant={"link"}>Details</Button>
-//               </Link>
-//             </TableCell>
-//           </TableRow>
-//         ))}
-//       </TableBody>
-//     </Table>
-//   );
-// }
+
+const MeetingNoteDialog = () => {
+  const meetingDialogHandler = () => {
+    console.log("Meeting Dialog Updated");
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <button>
+          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-md bg-brand bg-opacity-10">
+            <Icons.addNote className="h-4 w-4" />
+          </div>
+        </button>
+      </DialogTrigger>
+
+      <DialogContent className="w-full px-10">
+        <DialogHeader className="">
+          <DialogTitle className="text-center text-lg font-bold text-black">
+            Meeting notes
+          </DialogTitle>
+          <DialogDescription className=""></DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center space-x-2">
+          <div className="w-full">
+            <Label htmlFor="subject" className="">
+              Subject of meeting notes
+            </Label>
+            <Input
+              type="text"
+              id="subject"
+              placeholder="Subject"
+              className="mb-6 mt-2 border-black py-6"
+              // className="w-full border-black bg-white focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0"
+            />
+            <Label htmlFor="note" className="">
+              Meeting note details
+            </Label>
+            <Textarea
+              id="note"
+              placeholder="Type your message here."
+              className="mt-2 border-black"
+            />
+          </div>
+        </div>
+        <DialogFooter className="sm:justify-center">
+          <Button
+            type="button"
+            className="w-full py-8 text-lg font-semibold"
+            onClick={meetingDialogHandler}
+          >
+            Send
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+const CreateAccountDialog = () => {
+  const meetingDialogHandler = () => {
+    console.log("Meeting Dialog Updated");
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button
+          variant={"outline"}
+          size={"lg"}
+          className="border-brand text-brand"
+        >
+          Create Account
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="w-full px-10">
+        <DialogHeader className="">
+          <DialogTitle className="text-center text-lg font-bold text-black">
+            Create Account
+          </DialogTitle>
+          <DialogDescription className=""></DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center space-x-2">
+          <div className="w-full">
+            <Label htmlFor="email" className="">
+              Email
+            </Label>
+            <Input
+              type="text"
+              id="email"
+              placeholder="example@gmail.com"
+              className="mb-4 mt-2 border-black py-6"
+              // className="w-full border-black bg-white focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0"
+            />
+            <Label htmlFor="password" className="">
+              Password
+            </Label>
+            <Input
+              type="password"
+              id="password"
+              placeholder="1234324345r"
+              className="mb-4 mt-2 border-black py-6"
+            />
+          </div>
+        </div>
+        <DialogFooter className="sm:justify-center">
+          <Button
+            type="button"
+            className="w-full py-8 text-lg font-semibold"
+            onClick={meetingDialogHandler}
+          >
+            Send
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};

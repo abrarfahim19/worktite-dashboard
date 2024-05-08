@@ -1,3 +1,6 @@
+"use client";
+import { TestComponent } from "@/components/testComponent";
+
 export default function Home() {
   return (
     // <main className="container">
@@ -6,6 +9,9 @@ export default function Home() {
     //     <TopBar />
     //   </div> */}
     // </main>
-    <div className="w-full bg-brand">This is a text</div>
+    <div className="">
+      {/* <CustomStatus /> */}
+      <TestComponent />
+    </div>
   );
 }

@@ -9,9 +9,9 @@ import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 
 const isActiveLink = (currentPath: string, menuPath: string) => {
-  if (currentPath === "/dashboard") {
+  if (currentPath === menuPath) {
     return true;
-  } else if (currentPath.startsWith(menuPath)) {
+  } else if (menuPath !== "/dashboard" && currentPath.startsWith(menuPath)) {
     return true;
   } else return false;
 };
@@ -81,7 +81,6 @@ const SideBarTopMenus = [
 export const Sidebar = () => {
   const pathName = usePathname();
 
-  console.log("Path name", pathName);
   return (
     <div className="h-screen w-72 bg-softDark">
       <div className="flex items-center justify-center py-10">
@@ -91,12 +90,12 @@ export const Sidebar = () => {
         <div className="">
           <ul>
             {SideBarTopMenus.map((menu, index) => {
-              console.log(
-                "Path Name is: ",
-                pathName,
-                "Menu Path is:",
-                menu.path,
-              );
+              // console.log(
+              //   "Path Name is: ",
+              //   pathName,
+              //   "Menu Path is:",
+              //   menu.path,
+              // );
               return (
                 <li key={index} className="">
                   <Link href={menu.path}>
@@ -121,7 +120,8 @@ export const Sidebar = () => {
                 <li key={index} className="">
                   <Link href={menu.path}>
                     <SideButton
-                      active={pathName === menu.path}
+                      // active={pathName === menu.path}
+                      active={isActiveLink(pathName, menu.path)}
                       activeIcon={menu.activeIcon}
                       inactiveIcon={menu.inactiveIcon}
                       badge={menu.badge && menu.badge}

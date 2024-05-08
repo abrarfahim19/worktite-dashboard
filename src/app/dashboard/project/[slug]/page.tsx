@@ -1,6 +1,5 @@
 "use client";
 
-import { PlainCombobox } from "@/components/combobox";
 import { DatePicker } from "@/components/datePicker";
 import { Timeline } from "@/components/timeline";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -41,6 +40,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
+
+import { InputTimeForm } from "@/components/inputTimeForm";
 
 const Page = ({
   params,
@@ -159,12 +160,12 @@ const TotalTime = () => {
 const Running = () => {
   return (
     <div className="bg-white px-4 pt-8">
-      <h4 className="text-center text-2xl text-brand">Running</h4>
+      <h4 className="mb-4 text-center text-2xl text-brand">Running</h4>
       <div className="flex justify-around">
         <div className="flex gap-20">
           <div className="mx-8 flex gap-8">
             <h3 className="mt-4 text-2xl font-semibold">Start</h3>
-            <div className="flex flex-col justify-start">
+            {/* <div className="flex flex-col justify-start">
               <div className="flex w-full items-center justify-between border-b-2 border-b-black">
                 <Input
                   className="my-2 w-full border-0 bg-transparent pl-0 text-2xl focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0"
@@ -174,11 +175,13 @@ const Running = () => {
                 <PlainCombobox combobox={combobox} />
               </div>
               <Button className="mt-8 w-32 py-8 text-xl">Add</Button>
-            </div>
+            </div> */}
+
+            <InputTimeForm disabled hour="10" minute="20" meridiem="am" />
           </div>
           <div className="mx-8 flex gap-8">
             <h3 className="mt-4 text-2xl font-semibold">End</h3>
-            <div className="flex flex-col justify-start">
+            {/* <div className="flex flex-col justify-start">
               <div className="flex w-full items-center justify-between border-b-2 border-b-black">
                 <Input
                   className="my-2 w-full border-0 bg-transparent pl-0 text-2xl focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0"
@@ -193,7 +196,9 @@ const Running = () => {
               >
                 Add
               </Button>
-            </div>
+            </div> */}
+
+            <InputTimeForm />
           </div>
         </div>
       </div>

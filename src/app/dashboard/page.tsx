@@ -1,7 +1,7 @@
-import { Combobox } from "@/components/combobox";
+import { BarChartWithData } from "@/components/barChart";
+import { PieChartWithData } from "@/components/pieChart";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ const Page = () => {
   return (
     <div className="grid w-full grid-cols-12 grid-rows-2 gap-4 p-4">
       <div className="col-span-8 row-span-1 rounded-md bg-white">
-        <BarChart />
+        <BarChartSection />
       </div>
       <div className="col-span-4 row-span-1 rounded-md bg-white">
         <DonutChart />
@@ -35,104 +35,14 @@ const Page = () => {
 
 export default Page;
 
-const types = [
-  {
-    value: "project",
-    label: "Project",
-  },
-  {
-    value: "timespent",
-    label: "Time Spent",
-  },
-  {
-    value: "clients",
-    label: "Clients",
-  },
-  {
-    value: "revenue",
-    label: "Revenue",
-  },
-];
-
-const days = [
-  {
-    value: "7d",
-    label: "Last 7 days",
-  },
-  {
-    value: "14d",
-    label: "Last 14 days",
-  },
-  {
-    value: "30d",
-    label: "Last 30 days",
-  },
-  {
-    value: "2m",
-    label: "Last 2 months",
-  },
-  {
-    value: "3m",
-    label: "Last 3 months",
-  },
-  {
-    value: "6m",
-    label: "Last 6 months",
-  },
-  {
-    value: "30",
-    label: "Last 30 days",
-  },
-];
-
-const BarChart = () => {
+const BarChartSection = () => {
   return (
     <div>
       <div className="flex flex-row items-center justify-between p-4">
         <h1 className="text-xl font-semibold">Overview of the project</h1>
-        <div className="flex gap-4">
-          <Combobox combobox={types} />
-          <Combobox combobox={days} />
-        </div>
       </div>
-      <div className="h-52 w-full bg-blue-400"></div>
-      <div className="mx-14 my-4 flex justify-between">
-        <div className="flex items-center gap-2">
-          <Checkbox id="new" />
-          <label
-            htmlFor="new"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            New Projects
-          </label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox id="running" />
-          <label
-            htmlFor="running"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Running projects
-          </label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox id="finished" />
-          <label
-            htmlFor="finished"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Finished projects
-          </label>
-        </div>
-        <div className="flex items-center gap-2">
-          <Checkbox id="cancelled" />
-          <label
-            htmlFor="cancelled"
-            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-          >
-            Cancelled projects
-          </label>
-        </div>
+      <div className="h-64 w-full">
+        <BarChartWithData />
       </div>
     </div>
   );
@@ -142,6 +52,9 @@ const DonutChart = () => {
   return (
     <div>
       <h1 className="p-4 text-xl font-semibold">Overview of the project</h1>
+      <div className="h-64 w-full">
+        <PieChartWithData />
+      </div>
     </div>
   );
 };
