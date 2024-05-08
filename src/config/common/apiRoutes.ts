@@ -76,5 +76,17 @@ export const apiRoutes = Object.freeze({
             SEND_MESSAGES: (chatId: number | undefined) => `general/api/v1/private/chats/${chatId}/messages/`,
         }
     },
-    PROTECTED: {},
+    PROTECTED: {
+        PROJECT: {
+            GET: "",
+            LIST: addQueryParams("/projects/api/v1/protected/projects/"),
+            CREATE: "",
+            CLIENT_STATUS: {
+                LIST: "",
+                CREATE: (projectPk: string | number)=> `/projects/api/v1/protected/projects/${projectPk}/client_status/`,
+                UPDATE: (projectPk: string | number, id: string | number)=> `/projects/api/v1/protected/projects/${projectPk}/client_status/${id}/`,
+                DELETE: (projectPk: string | number, id: string | number)=> `/projects/api/v1/protected/projects/${projectPk}/client_status/${id}/`
+            }
+        }
+    },
 });
