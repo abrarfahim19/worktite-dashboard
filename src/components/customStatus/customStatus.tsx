@@ -6,6 +6,8 @@ import {
     updateClientStatus
 } from "@/app/(layout)/dashboard/project/manager/projectManager";
 import {Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage} from "@/components/ui/form";
+import {apiRoutes} from "@/config/common/apiRoutes";
+import {useAxiosSWR} from "@/hooks/useAxiosSwr";
 import {Check, ChevronsUpDown, PlusCircle} from "lucide-react";
 
 import {Button} from "@/components/ui/button";
@@ -33,7 +35,8 @@ import {Label} from "../ui/label";
 interface FieldType {
     id: string | number;
     title: string;
-    is_active: boolean;
+    is_selected: boolean;
+    selected_at: string;
     created_at: string;
     updated_at: string
 
@@ -41,36 +44,41 @@ interface FieldType {
 }
 
 interface CustomStatusProps {
-    statuses: FieldType[];
     project_id: string | number;
-    mutate?: () => void;
 }
 
-export const CustomStatus: React.FC<CustomStatusProps> = ({statuses, project_id, mutate}) => {
+export const CustomStatus: React.FC<CustomStatusProps> = ({project_id}) => {
+    const {
+        data: statuses,
+        mutate
+    } = useAxiosSWR<FieldType>(apiRoutes.PROTECTED.PROJECT.CLIENT_STATUS.LIST(project_id)({limit: 10}))
     const activateItem = React.useMemo(() => {
-        let res = {title: ""}
-        statuses?.forEach((status) => {
-            if (status?.is_active) {
-                res = status;
-                return;
+        if (!statuses || statuses.length === 0) {
+            return undefined;
+        }
+
+        const sorted = [...statuses].sort((a, b) => new Date(b.selected_at).getTime() - new Date(a.selected_at).getTime());
+        for (const status of sorted) {
+            if (status?.is_selected) {
+                return status;
             }
-        })
-        return res;
+        }
+
+        return undefined;
     }, [statuses]);
     const [open, setOpen] = useState(false);
 
     const selectStatus = (item: FieldType) => async () => {
         setOpen(false);
-        await updateClientStatus(project_id, item?.id, {...item, is_active: true})
+        await updateClientStatus(project_id, item?.id, {...item, is_selected: true})
         if (mutate) {
-            mutate()
+            await mutate()
         }
     }
     const deleteFieldItemHandler = async (item: FieldType) => {
         await deleteClientStatus(project_id, item.id)
-        // setFields(fields.filter((field) => field.id !== item.id));
         if (mutate) {
-            mutate()
+            await mutate()
         }
     };
     return (
@@ -81,7 +89,7 @@ export const CustomStatus: React.FC<CustomStatusProps> = ({statuses, project_id,
                     role="combobox"
                     className={cn("w-[200px] justify-between")}
                 >
-                    {truncateText(activateItem?.title, 20)}
+                    {truncateText(activateItem?.title ?? "", 20)}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50"/>
                 </Button>
             </PopoverTrigger>
@@ -93,10 +101,11 @@ export const CustomStatus: React.FC<CustomStatusProps> = ({statuses, project_id,
                                 <Button
                                     variant={"ghost"}
                                     key={item.id}
+                                    disabled={item?.is_selected}
                                     onClick={selectStatus(item)}
                                     className={cn(
                                         "w-full justify-start text-left",
-                                        item.is_active
+                                        item?.id == activateItem?.id
                                             ? " font-bold text-brand"
                                             : "",
                                     )}
@@ -124,7 +133,7 @@ export const CustomStatus: React.FC<CustomStatusProps> = ({statuses, project_id,
                                         item={item}
                                         setOpen={setOpen}
                                     />
-                                    {!item?.is_active ? (
+                                    {!item?.is_selected ? (
                                         <Button
                                             variant={"ghost"}
                                             onClick={() => deleteFieldItemHandler(item)}
@@ -193,7 +202,7 @@ const StatusDialogue: React.FC<IStatusDialogueProps> = ({
             console.log(data)
         }
         if (mutate) {
-            mutate()
+            await mutate()
         }
         setOpen(false);
 

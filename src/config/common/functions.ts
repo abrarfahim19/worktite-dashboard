@@ -127,3 +127,14 @@ export function localDateString2dbDateString(date: Date | undefined): string {
     const day = String(date.getDate()).padStart(2, '0');
     return `${year}-${month}-${day}`;
 }
+export function extractPathFromUrl(url: string): string {
+    const parsedUrl = new URL(url);
+    return parsedUrl.pathname + parsedUrl.search;
+}
+export function updateUrlQueryParameter(url: string, opts:{[key:string]:any}): string {
+    const parsedUrl = new URL(url);
+    Object.entries(opts)?.forEach(([key, value])=>{
+        parsedUrl.searchParams.set(key, value);
+    })
+    return parsedUrl.toString();
+}

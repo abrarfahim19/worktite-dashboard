@@ -1,5 +1,3 @@
-import {Sender} from "@/app/message/page";
-
 export interface IMAGE {
     id: number;
     thumbnail: string;
@@ -9,9 +7,18 @@ export interface IMAGE {
     created_by: number;
 }
 
+export interface Sender {
+    id: number;
+    email: string;
+    username: string | null;
+    details: UserDetails;
+}
+
+
 export interface UserDetails {
-    first_name: string | null;
-    last_name: string | null;
+    name: string | null;
+    contact_name: string | null;
+    company_name: string | null;
     phone: string | null;
     vat: string | null;
     bill_email: string | null;
@@ -19,6 +26,12 @@ export interface UserDetails {
     gender: number;
     profile_picture: string | null;
     full_name: string | null;
+}
+
+export interface User {
+    id: number | string;
+    email: string;
+    user_details: UserDetails
 }
 
 export interface Chat {

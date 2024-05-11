@@ -1,6 +1,11 @@
-import { apiGet } from "@/config/common/api";
+import {apiGet} from "@/config/common/api";
+import {extractPathFromUrl, updateUrlQueryParameter} from "@/config/common/functions";
 import useSWR from "swr";
-import useSWRInfinite from "swr/infinite";
+
+interface IFetchNext {
+    limit?: number;
+    offset?: number;
+}
 
 interface APIResponse<T> {
     results: T[];
@@ -15,7 +20,7 @@ interface APIResponseApiGet<T> {
 }
 
 export function useAxiosSWR<T = any>(deps: string | null) {
-    const {data: responseData, ...res} = useSWR<APIResponseApiGet<T>>(deps, apiGet)
+    const {data: responseData, mutate, ...res} = useSWR<APIResponseApiGet<T>>(deps, apiGet)
     const {
         data: {results = [], count = 0, next, previous},
     } = responseData || {
@@ -26,26 +31,35 @@ export function useAxiosSWR<T = any>(deps: string | null) {
             previous: null
         },
     };
+    const fetchNext = async (opt?: IFetchNext) => {
+        if (next) {
+            let nextUrl = next;
+            if (opt) {
+                nextUrl = updateUrlQueryParameter(nextUrl, opt);
+            }
+            const nextPageResponse = await apiGet(extractPathFromUrl(nextUrl));
+            await mutate(nextPageResponse, false);
+        }
+    };
+    const fetchPrev = async (opt?: IFetchNext) => {
+        if (previous) {
+            let nextUrl = previous;
+            if (opt) {
+                nextUrl = updateUrlQueryParameter(nextUrl, opt);
+            }
+            const nextPageResponse = await apiGet(extractPathFromUrl(nextUrl));
+            await mutate(nextPageResponse, false);
+        }
+    };
     return {
         data: results,
         count,
         next: Boolean(next),
         previous: Boolean(previous),
+        fetchNext,
+        fetchPrev,
+        mutate,
         ...res
     }
 }
 
-
-export function useAxiosSWRInfiniteLoading(apiUrl: string, filter?: any) {
-    const PAGE_SIZE = 6;
-
-    const {data, mutate, size, setSize, isValidating} = useSWRInfinite(
-        (index) =>
-            `${apiUrl}?limit=${PAGE_SIZE}&page=${index + 1}&filters=${filter}`,
-        {
-            fetcher: apiGet,
-            revalidateFirstPage: false,
-        }
-    );
-    return {data, mutate, size, setSize, isValidating};
-}

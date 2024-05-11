@@ -7,7 +7,7 @@ export interface IQueryParams {
     [key: string]: any;
 }
 
-const addQueryParams =
+export const addQueryParams =
     (route: string) =>
         (queryParams: IQueryParams = {limit: 10, offset: 0}) => {
             let modifiedUrl = route;
@@ -82,7 +82,7 @@ export const apiRoutes = Object.freeze({
             LIST: addQueryParams("/projects/api/v1/protected/projects/"),
             CREATE: "",
             CLIENT_STATUS: {
-                LIST: "",
+                LIST: (projectPk: string | number)=> addQueryParams(`/projects/api/v1/protected/projects/${projectPk}/client_status/`),
                 CREATE: (projectPk: string | number)=> `/projects/api/v1/protected/projects/${projectPk}/client_status/`,
                 UPDATE: (projectPk: string | number, id: string | number)=> `/projects/api/v1/protected/projects/${projectPk}/client_status/${id}/`,
                 DELETE: (projectPk: string | number, id: string | number)=> `/projects/api/v1/protected/projects/${projectPk}/client_status/${id}/`

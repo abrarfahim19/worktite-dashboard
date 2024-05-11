@@ -1,5 +1,6 @@
 "use client";
 import {CustomStatus} from "@/components/customStatus";
+import {useLoader} from "@/components/loader/loader";
 import {Badge} from "@/components/ui/badge";
 import {Button} from "@/components/ui/button";
 import {
@@ -13,10 +14,11 @@ import {
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {apiRoutes} from "@/config/common/apiRoutes";
 import {STATUS} from "@/config/common/AppEnums";
+import {User} from "@/config/common/interfaces";
 import {useAxiosSWR} from "@/hooks/useAxiosSwr";
 import Image from "next/image";
 import Link from "next/link";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 
 interface FieldType {
     value: string;
@@ -51,7 +53,7 @@ interface IItems {
     id: number;
     category: Category;
     client_status: ClientStatus[];
-    pricing: Pricing;
+    pricing_type: string;
     created_at: string;
     updated_at: string;
     is_active: boolean;
@@ -62,7 +64,7 @@ interface IItems {
     description: string;
     price: string;
     created_by: number;
-    client: number;
+    client: User;
 }
 
 interface ProjectTab {
@@ -156,7 +158,8 @@ const Page = () => {
 export default Page;
 
 function ActiveTableProjects({items}: { items:ProjectTab }) {
-    const {data: projects, isLoading, mutate} = useAxiosSWR<IItems>(apiRoutes.PROTECTED.PROJECT.LIST({limit: 10, offset: 0, status:STATUS.ACTIVE}))
+    const {data: projects, isLoading} = useAxiosSWR<IItems>(apiRoutes.PROTECTED.PROJECT.LIST({limit: 100, offset: 0, status:STATUS.ACTIVE, fields:"id,started_at,title,pricing_type,category.title,client.email", expand:"pricing,category,client"}))
+    useLoader({isLoading})
     return (
         <Table className="">
             <TableHeader>
@@ -208,18 +211,18 @@ function ActiveTableProjects({items}: { items:ProjectTab }) {
                                 </div>
                                 <div className="flex flex-col items-start justify-center">
                                   <p className="font-bold">{item?.title}</p>
-                                  <p>Pricing type: {item?.pricing?.pricing_type}</p>
+                                  <p>Pricing type: {item?.pricing_type}</p>
                                 </div>
                               </div>
                             </TableCell>
                             <TableCell className="text-center font-medium">
-                              {/*{item.accountNo}*/}
+                              {item?.client?.email}
                             </TableCell>
                             <TableCell className="text-center">{item?.category?.title}</TableCell>
                             <TableCell className="text-center">{10}</TableCell>
                             <TableCell className="text-center">{formattedDate}</TableCell>
                             <TableCell className="text-center">
-                              <CustomStatus mutate={mutate} project_id={item?.id} statuses={item?.client_status} />
+                              <CustomStatus project_id={item?.id} />
                             </TableCell>
                             <TableCell className="text-center">
                               <Link href={`/dashboard/project/${item.id}`}>
@@ -235,6 +238,7 @@ function ActiveTableProjects({items}: { items:ProjectTab }) {
 }
 
 function CompletedTableProjects({items}: { items: ProjectTab }) {
+    const {data: projects} = useAxiosSWR<IItems>(apiRoutes.PROTECTED.PROJECT.LIST({limit: 10, offset: 0, status:STATUS.COMPLETE, fields:"id,started_at,title,price,pricing_type,category.title,client.email", expand:"pricing,category,client"}))
     return (
         <Table className="">
             <TableHeader>
@@ -258,37 +262,37 @@ function CompletedTableProjects({items}: { items: ProjectTab }) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {items.map((item) => (
-                    <TableRow key={item.accountNo}>
+                {projects.map((item) => (
+                    <TableRow key={item.id}>
                         <TableCell className="text-center font-medium">
                             <div className="flex gap-2">
                                 <div className="relative h-12 w-12">
-                                    <Image
-                                        layout="fill"
-                                        objectFit="cover"
-                                        quality={100}
-                                        src={item.projectImage}
-                                        alt="project image"
-                                    />
+                                    {/*<Image*/}
+                                    {/*    layout="fill"*/}
+                                    {/*    objectFit="cover"*/}
+                                    {/*    quality={100}*/}
+                                    {/*    src={item.projectImage}*/}
+                                    {/*    alt="project image"*/}
+                                    {/*/>*/}
                                 </div>
                                 <div className="flex flex-col items-start justify-center">
-                                    <p className="font-bold">{item.name}</p>
-                                    <p>Pricing type: {item.projectType}</p>
+                                    <p className="font-bold">{item?.title}</p>
+                                    <p>Pricing type: {item?.pricing_type}</p>
                                 </div>
                             </div>
                         </TableCell>
                         <TableCell className="text-center font-medium">
-                            {item.accountNo}
+                            {item?.client?.email}
                         </TableCell>
-                        <TableCell className="text-center">{item.noOfProjects}</TableCell>
+                        <TableCell className="text-center">{item?.noOfProjects}</TableCell>
                         <TableCell className="text-center">
-                            {item.projectStartingDate}
-                        </TableCell>
-                        <TableCell className="text-center">
-                            {item.projectStartingDate}
+                            {item?.price}
                         </TableCell>
                         <TableCell className="text-center">
-                            <Link href={`/dashboard/project/${item.projectID}`}>
+                            {item?.started_at}
+                        </TableCell>
+                        <TableCell className="text-center">
+                            <Link href={`/dashboard/project/${item?.id}`}>
                                 <Button
                                     size={"lg"}
                                     variant={"outline"}
@@ -306,6 +310,8 @@ function CompletedTableProjects({items}: { items: ProjectTab }) {
 }
 
 function TableProjects({items}: { items: ProjectTab }) {
+    const {data: projects} = useAxiosSWR<IItems>(apiRoutes.PROTECTED.PROJECT.LIST({limit: 10, offset: 0, status:STATUS.CANCELLED, fields:"id,started_at,title,price,pricing.pricing_type,category.title,client.email", expand:"pricing,category,client"}))
+
     return (
         <Table className="">
             <TableHeader>
@@ -334,38 +340,38 @@ function TableProjects({items}: { items: ProjectTab }) {
                 </TableRow>
             </TableHeader>
             <TableBody>
-                {items.map((item) => (
-                    <TableRow key={item.accountNo}>
+                {projects.map((item) => (
+                    <TableRow key={item?.id}>
                         <TableCell className="text-center font-medium">
                             <div className="flex gap-2">
                                 <div className="relative h-12 w-12">
-                                    <Image
-                                        layout="fill"
-                                        objectFit="cover"
-                                        quality={100}
-                                        src={item.projectImage}
-                                        alt="project image"
-                                    />
+                                    {/*<Image*/}
+                                    {/*    layout="fill"*/}
+                                    {/*    objectFit="cover"*/}
+                                    {/*    quality={100}*/}
+                                    {/*    src={item.projectImage}*/}
+                                    {/*    alt="project image"*/}
+                                    {/*/>*/}
                                 </div>
                                 <div className="flex flex-col items-start justify-center">
-                                    <p className="font-bold">{item.name}</p>
-                                    <p>Pricing type: {item.projectType}</p>
+                                    <p className="font-bold">{item?.title}</p>
+                                    <p>Pricing type: {item?.pricing_type}</p>
                                 </div>
                             </div>
                         </TableCell>
                         <TableCell className="text-center font-medium">
-                            {item.accountNo}
+                            {item?.client?.email}
                         </TableCell>
-                        <TableCell className="text-center">{item.category}</TableCell>
-                        <TableCell className="text-center">{item.noOfProjects}</TableCell>
+                        <TableCell className="text-center">{item?.category?.title}</TableCell>
+                        <TableCell className="text-center">{item?.noOfProjects}</TableCell>
                         <TableCell className="text-center">
-                            {item.projectStartingDate}
-                        </TableCell>
-                        <TableCell className="text-center">
-                            {item.projectStartingDate}
+                            {item?.started_at}
                         </TableCell>
                         <TableCell className="text-center">
-                            <Link href={`/dashboard/project/${item.projectID}`}>
+                            {item?.started_at}
+                        </TableCell>
+                        <TableCell className="text-center">
+                            <Link href={`/dashboard/project/${item?.id}`}>
                                 <Button variant={"link"}>Details</Button>
                             </Link>
                         </TableCell>
