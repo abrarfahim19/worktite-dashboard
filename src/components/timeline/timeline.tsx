@@ -1,67 +1,44 @@
+import { apiRoutes } from "@/config/common/apiRoutes";
+import {
+  timezoneToDDMMYYYY,
+  timezoneToHHMM,
+} from "@/config/common/timeFunctions";
+import { useAxiosSWR } from "@/hooks/useAxiosSwr";
+import { truncateText } from "@/lib/utils";
 import { CheckCircle } from "lucide-react";
-// import { GoCheckCircle, GoCheckCircleFill } from 'react-icons/go';
 
-export const Timeline = () => {
-  const data = [
-    {
-      id: 1,
-      name: "Initialize",
-      date: "10/12/2023",
-      time: "10:00 PM",
-      completed: true,
-    },
-    {
-      id: 2,
-      name: "Initialize",
-      date: "10/12/2023",
-      time: "10:00 PM",
-      completed: true,
-    },
-    {
-      id: 3,
-      name: "Initialize",
-      date: "10/12/2023",
-      time: "10:00 PM",
-      completed: true,
-    },
-    {
-      id: 4,
-      name: "Initialize",
-      date: "10/12/2023",
-      time: "10:00 PM",
-      completed: true,
-    },
-    {
-      id: 5,
-      name: "Initialize",
-      date: "10/12/2023",
-      time: "10:00 PM",
-      completed: false,
-    },
-    {
-      id: 6,
-      name: "Initialize",
-      date: "10/12/2023",
-      time: "10:00 PM",
-      completed: false,
-    },
-  ];
+interface IProjectTimelineProps {
+  id: string;
+}
+interface IData {
+  id: number;
+  title: string;
+  is_selected: boolean;
+  selected_at: string;
+  created_at: string;
+  updated_at: string;
+}
+export const Timeline: React.FC<IProjectTimelineProps> = ({ id }) => {
+  const { data: clientStatus } = useAxiosSWR<IData>(
+    apiRoutes.PROTECTED.PROJECTS.CLIENT_STATUS.LIST(id)({ limit: 6 }),
+  );
   return (
     <div className="mt-5 flex w-8 flex-col rounded-3xl bg-special md:h-[44px] md:w-full md:flex-row md:items-center md:justify-between">
-      {data.map((item, index) => {
+      {clientStatus.map((item, index) => {
         return (
           <>
             <div
               key={index}
               className={`flex flex-col md:flex-row md:bg-special ${
-                index === data.length - 1 &&
+                index === clientStatus.length - 1 &&
                 "md:rounded-rt-3xl md:rounded-r-3xl"
               } ${index === 0 && "md:rounded-l-3xl md:rounded-t-3xl "}`}
             >
               <div
                 className={`relative flex items-center justify-center md:h-[44px]
             ${
-              index !== data.length - 1 && data[index + 1].completed
+              index !== clientStatus.length - 1 &&
+              clientStatus[index + 1].is_selected
                 ? ""
                 : "rounded-b-3xl pb-1 md:rounded-b-none md:rounded-r-3xl md:pb-0 md:pr-2"
             }
@@ -69,24 +46,32 @@ export const Timeline = () => {
               index === 0 &&
               "rounded-t-3xl pt-1 md:rounded-l-3xl md:rounded-tr-none md:pl-2 md:pt-0"
             }
-            ${item.completed ? "bg-brand" : "bg-special md:bg-transparent"}`}
+            ${item.is_selected ? "bg-brand" : "bg-special md:bg-transparent"}`}
               >
-                {item.completed ? (
+                {item.is_selected ? (
                   <CheckCircle className={`text-3xl font-light text-white`} />
                 ) : (
                   <CheckCircle className={`text-3xl font-light text-brand`} />
                 )}
                 <div className="absolute left-10 h-10 md:left-0 md:top-12">
-                  <p className="text-sm font-bold text-black">{item.name}</p>
-                  <p className="text-xs text-black">{item.date}</p>
-                  <p className="text-xs text-black">{item.time}</p>
+                  <p className="text-sm font-bold text-black">
+                    {truncateText(item?.title, 10)}
+                  </p>
+                  <p className="text-xs text-black">
+                    {timezoneToDDMMYYYY(item?.selected_at)}
+                  </p>
+                  <p className="text-xs text-black">
+                    {timezoneToHHMM(item?.selected_at)}
+                  </p>
                 </div>
               </div>
             </div>
-            {index !== data.length - 1 && (
+            {index !== clientStatus.length - 1 && (
               <div
                 className={`h-16 grow md:h-[44px]  ${
-                  data[index + 1].completed ? "bg-brand" : "bg-special"
+                  clientStatus[index + 1].is_selected
+                    ? "bg-brand"
+                    : "bg-special"
                 }`}
               />
             )}

@@ -54,7 +54,7 @@ const Page = ({
   return (
     <div className="px-4">
       <BreadcrumbMenu />
-      <Timeline />
+      <Timeline id={params.slug} />
       <div className="mt-20"></div>
       <TotalTime />
       <Running />

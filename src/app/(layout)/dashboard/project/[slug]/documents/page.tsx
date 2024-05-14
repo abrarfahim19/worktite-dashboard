@@ -9,6 +9,8 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { apiRoutes } from "@/config/common";
+import useDataFetch from "@/hooks/useDataFetch";
 import { Icons } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
@@ -16,15 +18,13 @@ import { usePathname } from "next/navigation";
 
 const Page = () => {
   const pathName = usePathname();
-
   let parts = pathName.split("/");
   parts.pop();
   let newPath = parts.join("/");
   return (
     <div className="px-6">
       <BreadcrumbMenu projectPath={newPath} />
-      <ProjectMetaData />
-      <GeneralProjectInformation />
+      <ProjectMetaData projectPath={newPath} />
       <DesignDocuments />
       <TechnicalDocuments />
       <ArchiveDocuments />
@@ -39,6 +39,7 @@ const BreadcrumbMenu = ({ projectPath }: { projectPath: string }) => {
   let parts = projectPath.split("/");
   parts.pop();
   let newPath = parts.join("/");
+  console.log("Project ID:", projectPath.split("/")[3]);
   return (
     <Breadcrumb>
       <BreadcrumbList>
@@ -68,50 +69,73 @@ const BreadcrumbMenu = ({ projectPath }: { projectPath: string }) => {
   );
 };
 
-const projectMetaData = {
-  title: "DIY Kitchen",
-  categories: "Table",
-  pricingType: "Hourly",
-  hourlyPrcing: 15,
-};
+interface IProjectMetaDataProps {
+  projectPath: string;
+}
 
-const ProjectMetaData = () => {
+interface IProject {
+  id: number;
+  pricing_type: string;
+  created_at: string;
+  updated_at: string;
+  is_active: boolean;
+  started_at: string;
+  ended_at: string;
+  status: number;
+  title: string;
+  description: string;
+  price: string;
+  created_by: number;
+  category: number;
+  client: number;
+}
+
+const ProjectMetaData: React.FC<IProjectMetaDataProps> = ({ projectPath }) => {
+  const projectPk = projectPath.split("/")[3];
+  const { data, isLoading } = useDataFetch<IProject>(
+    apiRoutes.PROTECTED.PROJECTS.PROJECT.GET(projectPk),
+  );
   return (
-    <div className="mt-6 rounded-md bg-white p-4">
-      <div className="flex flex-col gap-4">
-        <div className="flex justify-start">
-          <p className="text-regular w-96 font-semibold">Title</p>
-          <p className="font-bold">{projectMetaData.title}</p>
-        </div>
-        <div className="flex justify-start">
-          <p className="text-regular w-96 font-semibold">Categories</p>
-          <p className="font-bold">{projectMetaData.categories}</p>
-        </div>
-        <div className="flex justify-start">
-          <p className="text-regular w-96 font-semibold">Pricing type</p>
-          <p className="font-bold">{projectMetaData.pricingType}</p>
-        </div>
-        <div className="flex justify-start">
-          <p className="text-regular w-96 font-semibold">Hourly Price</p>
-          <p className="font-bold">{projectMetaData.hourlyPrcing} $</p>
+    <div>
+      <div className="mt-6 rounded-md bg-white p-4">
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-start">
+            <p className="text-regular w-96 font-semibold">Title</p>
+            <p className="font-bold">
+              {isLoading ? "Loading..." : data?.title}
+            </p>
+          </div>
+          <div className="flex justify-start">
+            <p className="text-regular w-96 font-semibold">Categories</p>
+            <p className="font-bold">{data?.category}</p>
+          </div>
+          <div className="flex justify-start">
+            <p className="text-regular w-96 font-semibold">Pricing type</p>
+            <p className="font-bold">{data?.pricing_type}</p>
+          </div>
+          <div className="flex justify-start">
+            <p className="text-regular w-96 font-semibold">Hourly Price</p>
+            <p className="font-bold">This is not found!!!</p>
+          </div>
         </div>
       </div>
+      <GeneralProjectInformation description={data?.description} />
     </div>
   );
 };
 
-const GeneralProjectInformation = () => {
+interface IProjectDescriptionProps {
+  description?: string;
+}
+
+const GeneralProjectInformation: React.FC<IProjectDescriptionProps> = ({
+  description,
+}) => {
   return (
     <div className="mt-6">
       <h4 className="text-lg font-semibold">General Project Information</h4>
       <div className="mt-6 rounded-md bg-white p-4">
-        <p>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Aut, repellat
-          sint! Nostrum architecto aperiam fuga impedit deleniti consequuntur
-          praesentium sunt eligendi iusto cumque soluta dolores quisquam earum
-          est non molestiae a consectetur, cupiditate nisi? Laboriosam dolor
-          modi officiis! Corporis, sequi!
-        </p>
+        <p>{description}</p>
       </div>
     </div>
   );

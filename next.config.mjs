@@ -13,6 +13,12 @@ const nextConfig = {
                 hostname: 'github.com',
                 port: '',
                 pathname: '/**',
+            },
+            {
+                protocol: 'http',
+                hostname: '147.182.242.250',
+                port: '',
+                pathname: '/images/**',
             }
         ]
     }

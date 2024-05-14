@@ -1,4 +1,3 @@
-import { Timeline } from "@/components/timeline";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
@@ -21,7 +20,7 @@ const Page = () => {
     <div>
       <div className="px-4">
         <BreadcrumbMenu />
-        <Timeline />
+        {/* <Timeline  /> */}
         <MetaData />
         <GeneralInformation />
         <DesignDocuments />
