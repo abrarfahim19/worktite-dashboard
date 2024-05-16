@@ -1,9 +1,15 @@
 "use client";
 import { Icons } from "@/lib/utils";
 import { useDropzone } from "react-dropzone";
+import { Button } from "../ui/button";
 
 export const DragAndDrop = () => {
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    maxFiles: 1,
+    accept: {
+      "image/jpeg": [".jpeg", ".jpg", ".png"],
+    },
+  });
 
   const files = acceptedFiles.map((file: any) => {
     const turncated =
@@ -14,6 +20,9 @@ export const DragAndDrop = () => {
       </li>
     );
   });
+  const handleUpload = () => {
+    console.log("Upload Image");
+  };
   return (
     <div className="h-full w-full items-center justify-center">
       <div
@@ -30,8 +39,15 @@ export const DragAndDrop = () => {
           </p>
         </div>
       </div>
-      <h4 className="my-2 font-semibold">Files</h4>
-      <ul>{files}</ul>
+      <ul>
+        File Ready To Upload: <span>{files}</span>
+      </ul>
+      <div>
+        <Button className="mt-2 flex w-full gap-2" onClick={handleUpload}>
+          <Icons.uploadWhite className="h-4 w-4" />
+          <p>Upload Image</p>
+        </Button>
+      </div>
     </div>
   );
 };

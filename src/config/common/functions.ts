@@ -148,3 +148,15 @@ export const getFirstCharCapitalized = (str: string) => {
 
 export const PLACE_HOLDER_IMAGE =
   "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1";
+
+export const getCurrentMonth = () => {
+  const date = new Date();
+  const month = date.getMonth() + 1;
+  return month;
+};
+
+export const getCurrentYear = () => {
+  const date = new Date();
+  const year = date.getFullYear();
+  return year;
+};
