@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
@@ -8,17 +10,27 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 
 const Page = () => {
   return (
     <div className="p-4">
       <BreadcrumbMenu />
       <ProfilePhoto />
-      <ProjectDetails />
+      <ProfileDetails />
     </div>
   );
 };
@@ -115,67 +127,155 @@ const ProfilePhoto = () => {
   );
 };
 
-const ProjectDetails = () => {
+const FormSchema = z.object({
+  name: z.string().min(3, "Name is too short"),
+  position: z.string().min(3, "Position is too short"),
+  email: z.string().email(),
+  phone: z.string().min(3, "Phone number is too short"),
+  location: z.string().min(3, "Location is too short"),
+  about: z.string().min(3, "About is too short"),
+});
+
+const ProfileDetails = () => {
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      name: "",
+      position: "",
+      email: "",
+      phone: "",
+      location: "",
+      about: "",
+    },
+  });
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    console.log(data);
+  };
+
   return (
     <div className="mt-4">
       <p className="mb-2 font-semibold">Profile Details</p>
-      <div className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2">
-        <div>
-          <Label htmlFor="name">Name</Label>
-          <Input
-            type="text"
-            id="name"
-            placeholder="Name"
-            className="border-2 border-black"
-          />
-        </div>
-        <div>
-          <Label htmlFor="position">Position</Label>
-          <Input
-            type="text"
-            id="position"
-            placeholder="Position"
-            className="border-2 border-black"
-          />
-        </div>
-        <div>
-          <Label htmlFor="mail">E-mail</Label>
-          <Input
-            type="text"
-            id="mail"
-            placeholder="Email"
-            className="border-2 border-black"
-          />
-        </div>
-        <div>
-          <Label htmlFor="phone">Phone Number</Label>
-          <Input
-            type="text"
-            id="phone"
-            placeholder="Phone Number"
-            className="border-2 border-black"
-          />
-        </div>
-        <div className="col-span-2">
-          <Label htmlFor="location">Location</Label>
-          <Input
-            type="text"
-            id="location"
-            placeholder="Location of User"
-            className="border-2 border-black"
-          />
-        </div>
-      </div>
-      <Label htmlFor="about">About Me</Label>
-      <Textarea id="about" className="border-2 border-black bg-transparent" />
-      <div className="mt-6">
-        <Button
-          variant={"outline"}
-          size={"lg"}
-          className="border-brand bg-transparent text-brand"
-        >
-          Update Profile
-        </Button>
+      <div className="">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2"
+          >
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem className="col-span-1">
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Name"
+                      {...field}
+                      className="border-2 border-black"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="position"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Position</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Position"
+                      {...field}
+                      className="border-2 border-black"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>E-mail</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Email"
+                      {...field}
+                      className="border-2 border-black"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone Number</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Phone Number"
+                      {...field}
+                      className="border-2 border-black"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Location of User"
+                      {...field}
+                      className="border-2 border-black"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="about"
+              render={({ field }) => (
+                <FormItem className="col-span-2">
+                  <FormLabel>About Me</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="About Me"
+                      {...field}
+                      className="border-2 border-black bg-transparent"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <div className="mt-6">
+              <Button
+                type="submit"
+                variant={"outline"}
+                size={"lg"}
+                className="border-brand bg-transparent text-brand"
+              >
+                Update Profile
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
     </div>
   );

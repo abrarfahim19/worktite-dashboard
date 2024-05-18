@@ -1,9 +1,35 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const FormSchema = z.object({
+  email: z.string().email(),
+});
 
 const Page = () => {
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      email: "",
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    console.log(data);
+  };
   return (
     <div className="container p-20">
       <div className="flex items-center justify-center ">
@@ -13,24 +39,38 @@ const Page = () => {
             Enter your email address below and we’ll send you a code to reset
             your password
           </p>
-          <Label htmlFor="email">Email</Label>
-          <Input
-            type="email"
-            id="email"
-            className="mb-4"
-            placeholder="johndoe@gmail.com"
-          />
-
-          <Link href={"/emailverification"}>
-            <Button className="mb-4 w-full">Submit</Button>
-          </Link>
-
-          <Button
-            variant={"link"}
-            className=" w-full self-center font-semibold underline "
-          >
-            <Link href={"/login"}>Go Back</Link>
-          </Button>
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)}>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem className="col-span-1">
+                    <FormLabel>Your Email</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Your Email"
+                        {...field}
+                        className="border-2 border-black"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              {/* <Link href={"/emailverification"}> */}
+              <Button className="my-4 w-full" type="submit">
+                Submit
+              </Button>
+              {/* </Link> */}
+              <Button
+                variant={"link"}
+                className=" w-full self-center font-semibold underline "
+              >
+                <Link href={"/login"}>Go Back</Link>
+              </Button>
+            </form>
+          </Form>
         </div>
       </div>
     </div>

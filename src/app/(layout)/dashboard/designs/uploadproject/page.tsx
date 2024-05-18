@@ -30,7 +30,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Icons } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -126,60 +125,120 @@ const fieldsData = [
     label: "Category",
   },
 ];
+
+const FormSchema = z.record(
+  z.string().min(1, {
+    message: "Value should be at least 1 character long",
+  }),
+);
+
 const ProjectDetails = () => {
-  const [fields, setFields] = useState(fieldsData);
+  const [fieldsData, setFieldsData] = useState<z.infer<typeof FormSchema>>({
+    Title: "",
+    "Pricing Type": "",
+    "Design Type": "",
+    "Total Price": "",
+    "Duration of the Project": "",
+    Quality: "",
+    Category: "",
+    "Description About Project": "",
+  });
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: fieldsData,
+  });
+
+  function onSubmit(data: z.infer<typeof FormSchema>) {
+    console.log(data);
+  }
   return (
     <div className="mt-4">
       <p className="mb-2 font-semibold">Project Details</p>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-        {fields.map((field) => {
-          return (
-            <div key={field.label}>
-              <Label htmlFor={field.label}>{field.label}</Label>
-              <Input
-                type="text"
-                id={field.label}
-                placeholder={field.label}
-                className="border-2 border-black"
-              />
+      <div className="">
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="grid grid-cols-2 gap-x-4 gap-y-2"
+          >
+            {Object.keys(fieldsData).map((key) => {
+              if (key === "Description About Project")
+                return (
+                  <div key={key} className="col-span-2 w-full">
+                    <FormField
+                      key={key}
+                      control={form.control}
+                      name={key}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>{key}</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder={key}
+                              {...field}
+                              className="border-2 border-black bg-transparent"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                );
+              return (
+                <FormField
+                  key={key}
+                  control={form.control}
+                  name={key}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{key}</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder={key}
+                          {...field}
+                          className="border-2 border-black"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              );
+            })}
+            <div className="col-span-2">
+              <AddFieldDialogue setFieldsData={setFieldsData} />
             </div>
-          );
-        })}
+            <div className="col-span-2 mt-4">
+              <Button size={"lg"} type="submit">
+                Publish
+              </Button>
+              <Button variant={"link"}>
+                <p className="text-brand underline">Cancel</p>
+              </Button>
+            </div>
+          </form>
+        </Form>
       </div>
-      <AddFieldDialogue fields={fields} setFields={setFields} />
-      <Label htmlFor="description">Description about Project</Label>
-      <Textarea
-        id="description"
-        className="border-2 border-black bg-transparent"
-      />
-      <div className="mt-4">
-        <Button size={"lg"}>Publish</Button>
-        <Button variant={"link"}>
-          <p className="text-brand underline">Cancel</p>
-        </Button>
-      </div>
+
       {/* </div> */}
     </div>
   );
 };
 
-interface IFields {
-  label: string;
-}
 interface AddFieldDialogueProps {
-  fields: IFields[];
-  setFields: React.Dispatch<React.SetStateAction<IFields[]>>;
+  setFieldsData: React.Dispatch<
+    React.SetStateAction<z.infer<typeof FormSchema>>
+  >;
 }
 
 const FieldSchema = z.object({
   label: z.string().min(2, {
-    message: "Title shoudl be at leas 2 characters long.",
+    message: "Title should be at least 2 characters long.",
   }),
 });
 
 const AddFieldDialogue: React.FC<AddFieldDialogueProps> = ({
-  fields,
-  setFields,
+  setFieldsData,
 }) => {
   const form = useForm<z.infer<typeof FieldSchema>>({
     resolver: zodResolver(FieldSchema),
@@ -189,7 +248,10 @@ const AddFieldDialogue: React.FC<AddFieldDialogueProps> = ({
   });
 
   function onSubmit(data: z.infer<typeof FieldSchema>) {
-    setFields((prevFields) => [...prevFields, data]);
+    const label = data.label;
+    if (label !== null) {
+      setFieldsData((prev) => ({ ...prev, [label]: "" }));
+    }
     form.reset(); // Clear the form
   }
 
@@ -198,11 +260,10 @@ const AddFieldDialogue: React.FC<AddFieldDialogueProps> = ({
       <DialogTrigger asChild>
         <Button
           variant={"outline"}
-          className="my-4 flex gap-2 border-brand bg-transparent"
-          // onClick={handleCreateNewField}
+          className="my-4 flex w-1/4 gap-2 border-brand bg-transparent"
         >
           <Icons.addCircleBrand className="h-4 w-4" />
-          <p className="text-brand">Add New</p>
+          <p className="text-brand">Add New Field</p>
         </Button>
       </DialogTrigger>
 

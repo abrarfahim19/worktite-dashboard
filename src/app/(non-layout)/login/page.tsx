@@ -1,11 +1,38 @@
+"use client";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const FormSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+});
 
 const Page = () => {
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    console.log(data);
+  };
   return (
     <div className="container bg-brandBackground px-16 py-24">
       <div className="grid grid-cols-7">
@@ -36,43 +63,69 @@ const Page = () => {
         <div className="col-span-4 flex items-center justify-center bg-white p-10 py-20">
           <div className="w-full">
             <h5 className="mb-4 font-semibold">Login</h5>
-            <Label htmlFor="email">Your Email</Label>
-            <Input
-              type="email"
-              id="email"
-              className="mb-2"
-              placeholder="johndoe@gmail.com"
-            />
-            <Label htmlFor="password">Password</Label>
-            <Input
-              type="password"
-              id="password"
-              className="mb-2"
-              placeholder="....."
-            />
-            <div className="mb-2 flex w-full flex-row items-center justify-between">
-              <div className="flex w-1/2 items-center gap-2 ">
-                <Checkbox id="remember" />
-                <label
-                  htmlFor="remember"
-                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                >
-                  Remember me
-                </label>
-              </div>
-              <Link href={"/forgotpassword"}>
-                <Button
-                  variant={"link"}
-                  className="mr-0 inline p-0 font-semibold text-black "
-                >
-                  Forgot Password
-                </Button>
-              </Link>
-            </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1">
+                      <FormLabel>Your Email</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Your Email"
+                          {...field}
+                          className="border-2 border-black"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-            <Button className="w-full">
-              <Link href={"/dashboard"}>Login</Link>
-            </Button>
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1">
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="password"
+                          placeholder="Password"
+                          {...field}
+                          className="border-2 border-black"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="mb-2 flex w-full flex-row items-center justify-between">
+                  <div className="flex w-1/2 items-center gap-2 ">
+                    <Checkbox id="remember" />
+                    <label
+                      htmlFor="remember"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Remember me
+                    </label>
+                  </div>
+                  <Link href={"/forgotpassword"}>
+                    <Button
+                      variant={"link"}
+                      className="mr-0 inline p-0 font-semibold text-black "
+                    >
+                      Forgot Password
+                    </Button>
+                  </Link>
+                </div>
+
+                <Button className="w-full" type="submit">
+                  <Link href={"/dashboard"}>Login</Link>
+                </Button>
+              </form>
+            </Form>
           </div>
         </div>
       </div>
