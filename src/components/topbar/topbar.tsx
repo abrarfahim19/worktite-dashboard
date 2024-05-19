@@ -1,6 +1,14 @@
+"use client";
+
+import { IUser } from "@/app/(layout)/dashboard/clients/[slug]/page";
+import { apiRoutes } from "@/config/common";
+import useDataFetch from "@/hooks/useDataFetch";
+import { getUserData } from "@/lib/authLib";
 import { Icons } from "@/lib/utils";
 import { format } from "date-fns";
+import { JWTPayload } from "jose";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -12,7 +20,24 @@ const TopBarData = {
   userName: "John Doe",
   userImage: "https://github.com/shadcn.png",
 };
+
 export const TopBar = () => {
+  const [userData, setUserData] = useState<JWTPayload | null>(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getUserData();
+      setUserData(data);
+    };
+
+    fetchData();
+  }, []);
+  console.log("User Data is: ", userData);
+  const { data: completeUserData } = useDataFetch<IUser>(
+    apiRoutes.AUTH.USER_PROFILE({
+      expand: "user_details,user_details.profile_picture",
+    }),
+  );
+  console.log("Complete User Data is: ", completeUserData);
   const date = new Date(Number(TopBarData.currentDate) * 1000);
   const formattedDate = format(date, "h:mm a dd MMM yyyy");
   return (
@@ -44,10 +69,16 @@ export const TopBar = () => {
         <Link href={"/dashboard/profile"}>
           <div className="flex items-center gap-2">
             <Avatar className="h-12 w-12">
-              <AvatarImage src={TopBarData.userImage} />
-              <AvatarFallback>CN</AvatarFallback>
+              <AvatarImage
+                src={completeUserData?.user_details?.profile_picture?.image}
+              />
+              <AvatarFallback>
+                {completeUserData?.user_details?.name}
+              </AvatarFallback>
             </Avatar>
-            <p className="text-xl font-semibold">{TopBarData.userName}</p>
+            <p className="text-xl font-semibold">
+              {completeUserData?.user_details?.name}
+            </p>
           </div>
         </Link>
       </div>

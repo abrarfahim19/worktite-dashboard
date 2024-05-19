@@ -1,9 +1,10 @@
 "use client";
 
+import { logout } from "@/lib/authLib";
 import { Icons } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import React from "react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -80,7 +81,7 @@ const SideBarTopMenus = [
 
 export const Sidebar = () => {
   const pathName = usePathname();
-
+  const router = useRouter();
   return (
     <div className="h-screen w-72 bg-softDark">
       <div className="flex items-center justify-center py-10">
@@ -116,6 +117,28 @@ export const Sidebar = () => {
         <div className="">
           <ul>
             {SideBarBottomMenus.map((menu, index) => {
+              if (menu.name === "Logout") {
+                return (
+                  <li
+                    key={index}
+                    className=""
+                    onClick={async () => {
+                      await logout();
+                      router.push("/login");
+                    }}
+                  >
+                    <SideButton
+                      // active={pathName === menu.path}
+                      active={isActiveLink(pathName, menu.path)}
+                      activeIcon={menu.activeIcon}
+                      inactiveIcon={menu.inactiveIcon}
+                      badge={menu.badge && menu.badge}
+                    >
+                      {menu.name}
+                    </SideButton>
+                  </li>
+                );
+              }
               return (
                 <li key={index} className="">
                   <Link href={menu.path}>

@@ -42,7 +42,7 @@ interface IUserDetails {
   profile_picture?: IProfilePicture;
 }
 
-interface IUser {
+export interface IUser {
   id?: number;
   email?: string;
   username?: string | null;

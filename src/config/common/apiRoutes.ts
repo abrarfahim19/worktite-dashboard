@@ -32,7 +32,7 @@ const PRIVATE_ROUTE = PUBLIC_API_BASE_URL + "/private";
 export const apiRoutes = Object.freeze({
   API_BASE_SERVICE_PATH: PUBLIC_API_BASE_URL,
   AUTH: {
-    USER_PROFILE: "/auth/api/profile/",
+    USER_PROFILE: addQueryParams("/auth/api/profile/"),
     LOGIN: "/auth/api/signin/",
     SIGN_UP: "/auth/api/signup/",
     REFRESH_TOKEN: "/auth/api/token/refresh/",

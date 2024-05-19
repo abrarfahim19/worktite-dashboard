@@ -20,8 +20,11 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Icons } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
+import { useState } from "react";
+import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -113,14 +116,44 @@ const BreadcrumbMenu = () => {
 };
 
 const ProfilePhoto = () => {
+  const [files, setFiles] = useState([]);
+  const { getRootProps, getInputProps } = useDropzone({
+    accept: {
+      "image/*": [],
+    },
+    onDrop: (acceptedFiles) => {
+      setFiles(
+        acceptedFiles.map((file) =>
+          Object.assign(file, {
+            preview: URL.createObjectURL(file),
+          }),
+        ),
+      );
+    },
+  });
+
+  console.log("Files are", files);
   return (
-    <div className="z-10 my-10">
-      <div className="flex h-36 w-36 items-center justify-center rounded-full bg-brand">
-        <div className="flex h-[138px] w-[138px] items-center justify-center rounded-full bg-white">
-          <Avatar className="h-[134px] w-[134px]">
-            <AvatarImage src={userData.profilePhoto} />
-            <AvatarFallback></AvatarFallback>
-          </Avatar>
+    <div className="w-full">
+      <div
+        {...getRootProps({ className: "dropzone" })}
+        className="absolute z-10 flex h-36 w-36 items-center justify-center rounded-full bg-black bg-opacity-10"
+      >
+        <input {...getInputProps()} />
+        <Icons.upload className="m-auto" />
+      </div>
+      <div className="my-10">
+        <div className="flex h-36 w-36 items-center justify-center rounded-full bg-brand">
+          <div className="flex h-[138px] w-[138px] items-center justify-center rounded-full bg-white">
+            <Avatar className="h-[134px] w-[134px]">
+              <AvatarImage
+                src={
+                  files[0]?.preview ? files[0].preview : userData.profilePhoto
+                }
+              />
+              <AvatarFallback></AvatarFallback>
+            </Avatar>
+          </div>
         </div>
       </div>
     </div>

@@ -1,10 +1,25 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { getUserData } from "@/lib/authLib";
 import { Icons } from "@/lib/utils";
+import { JWTPayload } from "jose";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 const Page = () => {
+  const [userData, setUserData] = useState<JWTPayload | null>(null);
+  useEffect(() => {
+    const fetchData = async () => {
+      const data = await getUserData();
+      setUserData(data);
+    };
+
+    fetchData();
+  }, []);
+  console.log("User Data is: ", userData);
   return (
     <div className="px-4">
       <ProfileHeader />
