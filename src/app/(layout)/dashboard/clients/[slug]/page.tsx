@@ -19,7 +19,7 @@ import {
 } from "../../../../../components/ui/avatar";
 import { Button } from "../../../../../components/ui/button";
 
-interface IProfilePicture {
+export interface IProfilePicture {
   id: number;
   thumbnail: string;
   created_at: string;

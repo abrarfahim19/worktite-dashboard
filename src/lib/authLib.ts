@@ -19,6 +19,9 @@ export const encrypt = async (payload: any) => {
 };
 
 export const decrypt = async (token: string) => {
+  if (!token) {
+    return null;
+  }
   const { payload } = await jwtVerify(token, key, {
     algorithms: [JWT_ALGORITHM],
   });

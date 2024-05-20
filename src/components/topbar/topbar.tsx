@@ -3,12 +3,9 @@
 import { IUser } from "@/app/(layout)/dashboard/clients/[slug]/page";
 import { apiRoutes } from "@/config/common";
 import useDataFetch from "@/hooks/useDataFetch";
-import { getUserData } from "@/lib/authLib";
 import { Icons } from "@/lib/utils";
 import { format } from "date-fns";
-import { JWTPayload } from "jose";
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
@@ -22,16 +19,16 @@ const TopBarData = {
 };
 
 export const TopBar = () => {
-  const [userData, setUserData] = useState<JWTPayload | null>(null);
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getUserData();
-      setUserData(data);
-    };
+  // const [userData, setUserData] = useState<JWTPayload | null>(null);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     const data = await getUserData();
+  //     setUserData(data);
+  //   };
 
-    fetchData();
-  }, []);
-  console.log("User Data is: ", userData);
+  //   fetchData();
+  // }, []);
+  // console.log("User Data is: ", userData);
   const { data: completeUserData } = useDataFetch<IUser>(
     apiRoutes.AUTH.USER_PROFILE({
       expand: "user_details,user_details.profile_picture",
