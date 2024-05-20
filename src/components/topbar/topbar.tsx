@@ -34,7 +34,7 @@ export const TopBar = () => {
       expand: "user_details,user_details.profile_picture",
     }),
   );
-  console.log("Complete User Data is: ", completeUserData);
+  // console.log("Complete User Data is: ", completeUserData);
   const date = new Date(Number(TopBarData.currentDate) * 1000);
   const formattedDate = format(date, "h:mm a dd MMM yyyy");
   return (

@@ -39,7 +39,11 @@ export const apiRoutes = Object.freeze({
     BLACK_LIST: "/auth/api/token/blacklist-custom/",
   },
   FILES: {
-    IMAGES: `files/images/`,
+    IMAGES: {
+      LIST: addQueryParams(`/files/images/`),
+      POST: `/files/images/`,
+      DELETE: (id: number) => `/files/images/${id}/`,
+    },
   },
   PUBLIC: {
     PROJECTS: {

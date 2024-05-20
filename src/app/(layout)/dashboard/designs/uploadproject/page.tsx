@@ -1,7 +1,6 @@
 "use client";
 
 import { DragAndDrop } from "@/components/dragAndDrop";
-import { ImageLoadProgress } from "@/components/imageLoadProgress";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -77,7 +76,7 @@ const UploadImage = () => {
     <div className="mt-4">
       <p className="mb-4 font-bold">Upload Image</p>
       <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-1 ">
+        <div className="col-span-2 ">
           <div className="mb-10 h-[300px]">
             <DragAndDrop />
           </div>
@@ -87,7 +86,7 @@ const UploadImage = () => {
             <p>Upload Image</p>
           </Button> */}
         </div>
-        <div className="col-span-1 rounded bg-white p-4">
+        {/* <div className="col-span-1 rounded bg-white p-4">
           <ImageLoadProgress name="Photo1.jpg" progress={0} />
           <ImageLoadProgress name="Photo2.jpg" progress={0} />
           <ImageLoadProgress name="Photo3.jpg" progress={0} />
@@ -96,35 +95,11 @@ const UploadImage = () => {
             <Icons.uploadWhite className="h-4 w-4" />
             <p>Upload Image</p>
           </Button>
-        </div>
+        </div> */}
       </div>
     </div>
   );
 };
-
-const fieldsData = [
-  {
-    label: "Title",
-  },
-  {
-    label: "Pricing Type",
-  },
-  {
-    label: "Design Type",
-  },
-  {
-    label: "Total Price",
-  },
-  {
-    label: "Duration of the Project",
-  },
-  {
-    label: "Quality",
-  },
-  {
-    label: "Category",
-  },
-];
 
 const FormSchema = z.record(
   z.string().min(1, {
