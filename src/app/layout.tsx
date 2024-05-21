@@ -1,5 +1,6 @@
-// import { Toaster } from "@/components/ui/toaster";
-import { Toaster } from "@/components/ui/sonner";
+import { Toaster as SonnarToaster } from "@/components/ui/sonner";
+// import { Toaster as BigToast } from "@/components/ui/toaster";
+import { Toaster } from "@/components/ui/toaster";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
@@ -29,7 +30,10 @@ export default function RootLayout({
         )}
       >
         <main>{children}</main>
-        <Toaster position="top-center" richColors />
+        {/* <Toaster position="top-center" richColors /> */}
+        {/* <BigToast  position="top-center" richColors/> */}
+        <SonnarToaster />
+        <Toaster />
       </body>
     </html>
   );
