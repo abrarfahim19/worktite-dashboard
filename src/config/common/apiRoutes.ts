@@ -124,5 +124,15 @@ export const apiRoutes = Object.freeze({
         DELETE: "",
       },
     },
+    GENERAL: {
+      CHAT:{
+        LIST: addQueryParams("/general/api/v1/protected/chats/"),
+        GET: (id: string | number)=> addQueryParams(`/general/api/v1/protected/chats/${id}/`),
+        MESSAGES: {
+          LIST: (chatId:string | number)=> addQueryParams(`/general/api/v1/protected/chats/${chatId}/messages/`),
+          POST: (chatId: string | number)=> `/general/api/v1/protected/chats/${chatId}/messages/`
+        }
+      }
+    }
   },
 });

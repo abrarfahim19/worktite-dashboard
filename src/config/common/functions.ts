@@ -179,3 +179,24 @@ export function second2DHMS(seconds: number): { days: number; hours: number; min
 
     return {days, hours, minutes, seconds: remainingSeconds};
 }
+
+export const encodeDataToBase64 = (data: {[key:string]: any}):string => {
+    const jsonString = JSON.stringify(data);
+    return Buffer.from(jsonString).toString('base64');
+};
+
+export const decodeDataFromBase64 = (base64String: string): Record<string, any> | null => {
+    try {
+        const jsonString = atob(base64String);
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error('Failed to decode and parse data:', error);
+        return null;
+    }
+};
+
+export const storeMessageLocally = (message: string, chat: string| number, project:string|number): void => {
+    const messages = JSON.parse(localStorage.getItem('offlineMessages') || '[]');
+    messages.push({ id: Date.now(), message, is_send: false, project, chat });
+    localStorage.setItem('offlineMessages', JSON.stringify(messages));
+};
