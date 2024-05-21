@@ -16,7 +16,7 @@ export const addQueryParams =
       modifiedUrl = route.slice(0, -1);
     }
     const queryString = `/?${Object.entries(queryParams)
-      .map(([key, value]) => `&${key}=${value}`)
+      .map(([key, value], index) => index===0 ? `${key}=${value}` : `&${key}=${value}`)
       .join("")}`;
     return `${modifiedUrl}${queryString}`;
   };
@@ -85,7 +85,10 @@ export const apiRoutes = Object.freeze({
   },
   PROTECTED: {
     PROJECTS: {
-      GET: "",
+      GET: (projectPk: string) =>
+          `/projects/api/v1/protected/projects/${projectPk}/`,
+      GET_TOTAL_PROJECT: "/projects/api/v1/protected/projects_count/",
+      PROJECT_STATUS_LIST_COUNT: addQueryParams("/projects/api/v1/protected/project_status_count"),
       LIST: addQueryParams("/projects/api/v1/protected/projects/"),
       PROJECT: {
         GET: (projectPk: string) =>
@@ -104,6 +107,12 @@ export const apiRoutes = Object.freeze({
         DELETE: (projectPk: string | number, id: string | number) =>
           `/projects/api/v1/protected/projects/${projectPk}/client_status/${id}/`,
       },
+      WORK_HISTORY: {
+        LIST: (projectId:string | number) => addQueryParams(`/projects/api/v1/protected/projects/${projectId}/work-history/`),
+        GET: (projectId:string | number, id:string | number)=> `/projects/api/v1/protected/projects/${projectId}/work-history/${id}`,
+        POST: (projectId:string | number)=>`/projects/api/v1/protected/projects/${projectId}/work-history/`,
+        PUT:'',
+      }
     },
     CLIENTS: {
       LIST: addQueryParams("/auth/api/v1/protected/clients/"),
