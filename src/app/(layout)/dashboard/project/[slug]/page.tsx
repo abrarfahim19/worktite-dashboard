@@ -45,6 +45,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { FromToTime } from "@/components/fromToTime";
+import { postInvoice } from "../manager/projectManager";
 
 interface IProject {
   id: number;
@@ -89,7 +90,7 @@ const Page = ({
       <AppointmentList />
       <ProjectDetails />
       <FinalDocuments slug={params.slug} />
-      <ProjectInvoices />
+      <ProjectInvoices id={params.slug} />
       <MeetingNotes />
       <CompleteCancelOrder />
     </div>
@@ -119,26 +120,6 @@ const BreadcrumbMenu = () => {
     </Breadcrumb>
   );
 };
-
-const projectTimeData = {
-  total: {
-    seconds: "21",
-    minutes: "30",
-    hours: "05",
-    day: "00",
-  },
-};
-
-const combobox = [
-  {
-    value: "am",
-    label: "AM",
-  },
-  {
-    value: "pm",
-    label: "PM",
-  },
-];
 
 const TotalTime = ({ totalTimeStamp }: { totalTimeStamp?: number }) => {
   const durations = useMemo(() => {
@@ -564,7 +545,11 @@ const invoiceData = [
   },
 ];
 
-const ProjectInvoices = () => {
+interface IAdditionalInvoice {
+  id: string;
+}
+
+const ProjectInvoices: React.FC<IAdditionalInvoice> = ({ id }) => {
   return (
     <div className="mt-6 rounded-md bg-white p-4">
       <h3 className="text-lg font-semibold">Invoice</h3>
@@ -638,7 +623,7 @@ const ProjectInvoices = () => {
           </TableBody>
         </Table>
       </div>
-      <AdditionalInvoiceDialog />
+      <AdditionalInvoiceDialog id={id} />
     </div>
   );
 };
@@ -1031,9 +1016,19 @@ const NewAppointmentDialog = () => {
   );
 };
 
-const AdditionalInvoiceDialog = () => {
-  const [check, setCheck] = useState(false);
-  const { acceptedFiles, getRootProps, getInputProps } = useDropzone();
+interface IAdditionalInvoiceDialog {
+  id: string;
+}
+
+const AdditionalInvoiceDialog: React.FC<IAdditionalInvoiceDialog> = ({
+  id,
+}) => {
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    maxFiles: 1,
+    accept: {
+      "application/pdf": [".pdf", ".doc"],
+    },
+  });
 
   const files = acceptedFiles.map((file: any) => {
     const turncated =
@@ -1044,18 +1039,54 @@ const AdditionalInvoiceDialog = () => {
       </li>
     );
   });
+
   const additionalInvoiceHandler = () => {
     console.log("invoice Completed");
   };
-  const checkboxHandler = (prev: boolean) => {
-    setCheck(!prev);
+
+  const invoiceHandler = async () => {
+    console.log("Start executing!");
+    if (acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
+      const formData = new FormData();
+      formData.append("file", file);
+      console.log("File Type is following", file.type);
+      let file_type = 2;
+      if (file.type === "application/pdf") {
+        file_type = 1;
+      }
+      const payLoad = {
+        id,
+        formData,
+        file_type,
+      };
+      await postInvoice(payLoad);
+      // if
+      // await postInvoice(id, formData, );
+      // try {
+      //   const response = await apiPost(
+      //     apiRoutes.FILES.DOCUMENTS.POST,
+      //     formData,
+      //     {
+      //       headers: {
+      //         "Content-Type": "application/pdf",
+      //       },
+      //     },
+      //   );
+      //   console.log("File uploaded successfully:", response.data);
+      // } catch (error) {
+      //   console.error("Error uploading file:", error);
+      // }
+    } else {
+      console.log("No files to upload");
+    }
   };
   return (
     <Dialog>
       <DialogTrigger asChild>
         <Button
           variant={"outline"}
-          className="mt-4 border-brand px-8 py-8 text-lg font-semibold text-brand"
+          className="mt-4 border-brand bg-transparent px-8 py-8 text-lg font-semibold text-brand"
         >
           Additional Invoice
         </Button>
@@ -1096,8 +1127,8 @@ const AdditionalInvoiceDialog = () => {
         <DialogFooter className="">
           <div className="flex flex-1 flex-row gap-8">
             <Button
-              className={`w-44 bg-gray-300 py-8 text-lg text-black ${!check && "bg-brand text-white opacity-100"}`}
-              disabled={check}
+              className={`w-44 py-8 text-lg text-white`}
+              onClick={invoiceHandler}
             >
               Create Invoice
             </Button>

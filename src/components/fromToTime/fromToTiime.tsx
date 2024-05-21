@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { postWorkHistory } from "@/app/(layout)/dashboard/project/manager/projectManager";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -24,7 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { apiPost, apiRoutes, convertTo24Hour } from "@/config/common";
+import { convertTo24Hour } from "@/config/common";
 import React from "react";
 import { Separator } from "../ui/separator";
 
@@ -198,16 +199,8 @@ export const FromToTime: React.FC<FromToTimeProps> = ({
       started_at,
       ended_at,
     };
-    try {
-      const response = await apiPost(
-        apiRoutes.PROTECTED.PROJECTS.WORK_HISTORY.POST(id),
-        payload,
-      );
-      console.log("time uploaded successfully:", response.data);
-      form.reset();
-    } catch (error) {
-      console.error("Error uploading time:", error);
-    }
+    await postWorkHistory(id, payload);
+    form.reset();
   }
 
   return (

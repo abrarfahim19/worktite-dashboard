@@ -46,6 +46,11 @@ export const apiRoutes = Object.freeze({
       POST: `/files/images/`,
       DELETE: (id: number) => `/files/images/${id}/`,
     },
+    DOCUMENTS: {
+      LIST: addQueryParams("/files/files/"),
+      POST: "/files/files/",
+      DELETE: (id: number) => `/files/files/${id}/`,
+    },
   },
   PUBLIC: {
     PROJECTS: {
@@ -121,6 +126,14 @@ export const apiRoutes = Object.freeze({
         POST: (projectId: string | number) =>
           `/projects/api/v1/protected/projects/${projectId}/work-history/`,
         PUT: "",
+      },
+      INVOICE: {
+        LIST: (project_pk: string | number) =>
+          addQueryParams(
+            `/projects/api/v1/protected/projects/${project_pk}/invoice/`,
+          ),
+        POST: (project_pk: string | number) =>
+          `/projects/api/v1/protected/projects/${project_pk}/invoice/`,
       },
     },
     CLIENTS: {
