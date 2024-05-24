@@ -2,32 +2,40 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { getUserData } from "@/lib/authLib";
+import {
+  apiRoutes,
+  PLACE_HOLDER_COVER_IMAGE,
+  PLACE_HOLDER_IMAGE,
+} from "@/config/common";
+import useDataFetch from "@/hooks/useDataFetch";
 import { Icons } from "@/lib/utils";
-import { JWTPayload } from "jose";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { IUser } from "../clients/[slug]/page";
 
 const Page = () => {
-  const [userData, setUserData] = useState<JWTPayload | null>(null);
-  useEffect(() => {
-    const fetchData = async () => {
-      const data = await getUserData();
-      setUserData(data);
-    };
-
-    fetchData();
-  }, []);
-  console.log("User Data is: ", userData);
+  const { data: completeUserData } = useDataFetch<IUser>(
+    apiRoutes.AUTH.USER_PROFILE({
+      expand:
+        "user_details,user_details.profile_picture,user_details.cover_picture",
+    }),
+  );
+  console.log("This is the cover photo: ", completeUserData);
   return (
     <div className="px-4">
       <ProfileHeader />
-      <CoverPhoto />
-      <div className="flex">
-        <LeftSection />
-        <RightSection />
-      </div>
+      <CoverPhoto
+        coverPhoto={
+          completeUserData?.user_details?.cover_picture?.image ||
+          PLACE_HOLDER_COVER_IMAGE
+        }
+      />
+      {completeUserData && (
+        <div className="flex">
+          <LeftSection completeUserData={completeUserData} />
+          <RightSection />
+        </div>
+      )}
     </div>
   );
 };
@@ -96,27 +104,22 @@ const userData = {
   ],
 };
 
-const CoverPhoto = () => {
+const CoverPhoto = ({ coverPhoto }: { coverPhoto: string }) => {
   return (
     <div className="container absolute -z-10 mt-4 h-52 w-[1065px] overflow-hidden rounded-md border-[1px] border-black">
-      <Image
-        src={userData.coverPhoto}
-        fill={true}
-        alt="Cover Photo"
-        objectFit="cover"
-      />
+      <Image src={coverPhoto} fill={true} alt="Cover Photo" objectFit="cover" />
     </div>
   );
 };
 
-const ProfilePhoto = () => {
+const ProfilePhoto = ({ profilePhoto }: { profilePhoto: string }) => {
   return (
     <div className="z-10 ">
       <div className="flex h-36 w-36 items-center justify-center rounded-full bg-brand">
         <div className="flex h-[138px] w-[138px] items-center justify-center rounded-full bg-white">
           <Avatar className="h-[134px] w-[134px]">
-            <AvatarImage src={userData.profilePhoto} />
-            <AvatarFallback></AvatarFallback>
+            <AvatarImage src={profilePhoto} />
+            <AvatarFallback>User</AvatarFallback>
           </Avatar>
         </div>
       </div>
@@ -124,13 +127,20 @@ const ProfilePhoto = () => {
   );
 };
 
-const LeftSection = () => {
+const LeftSection = ({ completeUserData }: { completeUserData: IUser }) => {
   return (
     <div className="mt-36 flex w-[300px] flex-col items-center">
-      <ProfilePhoto />
-      <p className="mt-2 text-xl font-bold">{userData.name}</p>
-      <p className="text-md mt-1">{userData.role}</p>
-      <p className="mt-1 text-sm">{userData.phone}</p>
+      <ProfilePhoto
+        profilePhoto={
+          completeUserData.user_details?.profile_picture?.image ||
+          PLACE_HOLDER_IMAGE
+        }
+      />
+      <p className="mt-2 text-xl font-bold">
+        {completeUserData.user_details?.name}
+      </p>
+      <p className="text-md mt-1">{completeUserData.user_type}</p>
+      <p className="mt-1 text-sm">{completeUserData.user_details?.phone}</p>
       <Link href={"profile/edit"}>
         <Button
           variant={"outline"}
@@ -141,7 +151,9 @@ const LeftSection = () => {
         </Button>
       </Link>
       <p className="mt-6 font-semibold">About Me</p>
-      <p className="mt-2 text-center text-sm">{userData.about}</p>
+      <p className="mt-2 text-center text-sm">
+        {completeUserData.user_details?.about}
+      </p>
       <SocialMediaIcons />
     </div>
   );

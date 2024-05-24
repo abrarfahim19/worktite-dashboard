@@ -46,3 +46,14 @@ export interface IFiles {
   file: string;
   created_by: number;
 }
+
+export interface IInvoice {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  file_type: number;
+  is_receive: boolean;
+  created_by: number;
+  project: number;
+  file: IFiles | null;
+}

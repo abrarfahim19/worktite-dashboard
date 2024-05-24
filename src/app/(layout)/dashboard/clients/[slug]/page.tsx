@@ -1,6 +1,25 @@
 "use client";
 
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import {
   apiRoutes,
   getFirstCharCapitalized,
   PLACE_HOLDER_IMAGE,
@@ -9,15 +28,18 @@ import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
 import { useAxiosSWR } from "@/hooks/useAxiosSwr";
 import useDataFetch from "@/hooks/useDataFetch";
 import { Icons } from "@/lib/utils";
+import { zodResolver } from "@hookform/resolvers/zod";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
 } from "../../../../../components/ui/avatar";
 import { Button } from "../../../../../components/ui/button";
+import { addClientNote } from "../manager/manager";
 
 export interface IProfilePicture {
   id: number;
@@ -40,10 +62,11 @@ interface IUserDetails {
   about?: string;
   note?: string;
   profile_picture?: IProfilePicture;
+  cover_picture?: IProfilePicture;
 }
 
 export interface IUser {
-  id?: number;
+  id: number;
   email?: string;
   username?: string | null;
   user_details?: IUserDetails;
@@ -53,10 +76,19 @@ export interface IUser {
   last_login?: string | null;
 }
 
-const Page = () => {
-  const pathName = usePathname();
-  const userID = pathName.split("/")[3];
-  const { data: clientData, isLoading } = useDataFetch<IUser>(
+const Page = ({
+  params,
+}: {
+  params: {
+    slug: string;
+  };
+}) => {
+  const userID = params.slug;
+  const {
+    data: clientData,
+    isLoading,
+    refetch,
+  } = useDataFetch<IUser>(
     apiRoutes.PROTECTED.CLIENTS.CLIENT.GET(userID)({
       expand: "user_details,user_details.profile_picture",
     }),
@@ -64,21 +96,30 @@ const Page = () => {
   console.log("The client Data is: ", clientData);
   return (
     <div className="p-4">
-      <div className="grid grid-cols-5 gap-3">
-        <div className="col-span-2">
-          <LeftBar {...clientData} />
+      {clientData && (
+        <div className="grid grid-cols-5 gap-3">
+          <div className="col-span-2">
+            <LeftBar user={clientData} />
+          </div>
+          <div className="col-span-3">
+            <RightBar
+              id={clientData.id}
+              note={clientData?.user_details?.note}
+              refetch={refetch}
+            />
+          </div>
         </div>
-        <div className="col-span-3">
-          <RightBar {...clientData?.user_details} />
-        </div>
-      </div>
+      )}
     </div>
   );
 };
 
 export default Page;
 
-const LeftBar: React.FC<IUser> = ({ email, user_details }) => {
+interface ILeftBar {
+  user: IUser;
+}
+const LeftBar: React.FC<ILeftBar> = ({ user: { email, user_details } }) => {
   return (
     <div className="rounded-lg bg-white p-4">
       <div className="flex flex-col items-center gap-3">
@@ -126,26 +167,21 @@ const LeftBar: React.FC<IUser> = ({ email, user_details }) => {
   );
 };
 
-interface INote {
+interface IRight {
   note?: string;
+  id: number;
+  refetch: () => void;
 }
 
-const RightBar: React.FC<INote> = ({ note }) => {
+const RightBar: React.FC<IRight> = ({ note, id, refetch }) => {
   return (
     <div className="rounded-lg px-4">
       {note ? (
         <ClientNote note={note} />
       ) : (
-        <Button
-          variant={"outline"}
-          size={"lg"}
-          className="border-brand bg-transparent"
-        >
-          <Icons.addNote className="h-5 w-5" />
-          <p className="text-brand">Add Note</p>
-        </Button>
+        <ClientNoteDialog id={id} refetch={refetch} />
       )}
-      <AllProjects />
+      <AllProjects id={id} />
     </div>
   );
 };
@@ -163,9 +199,9 @@ const ClientNote = ({ note }: { note: string }) => {
   );
 };
 
-const AllProjects = () => {
+const AllProjects = ({ id }: { id: number }) => {
   const { data: projectsData, isLoading } = useAxiosSWR(
-    apiRoutes.PROTECTED.PROJECTS.LIST({ limit: 10, client: 3 }),
+    apiRoutes.PROTECTED.PROJECTS.LIST({ limit: 10, client: id }),
   );
   console.log("Project Data", projectsData);
   return (
@@ -246,5 +282,89 @@ const ProjectCard: React.FC<IProject> = ({
         </Link>
       </div>
     </div>
+  );
+};
+
+const FormSchema = z.object({
+  note: z.string(),
+});
+
+const ClientNoteDialog = ({
+  id,
+  refetch,
+}: {
+  id: number;
+  refetch: () => void;
+}) => {
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      note: "",
+    },
+  });
+  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    console.log("Data Is:", data);
+    await addClientNote(id, data);
+    refetch();
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        {/* <Button variant={"ghost"}> */}
+        <Button
+          variant={"outline"}
+          size={"lg"}
+          className="border-brand bg-transparent"
+        >
+          <Icons.addNote className="h-5 w-5" />
+          <p className="text-brand">Add Note</p>
+        </Button>
+        {/* </Button> */}
+      </DialogTrigger>
+
+      <DialogContent className="w-full px-10">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <DialogHeader className="">
+              <DialogTitle className="text-center text-lg font-bold text-black">
+                Client notes
+              </DialogTitle>
+              <DialogDescription className=""></DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-full">
+                <FormField
+                  control={form.control}
+                  name="note"
+                  render={({ field }) => (
+                    <FormItem className="col-span-1 mb-4">
+                      <FormLabel>Add Client Note</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Write client note"
+                          {...field}
+                          className="border-2 border-black"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            <DialogFooter className="sm:justify-center">
+              <DialogClose className="w-full">
+                <Button
+                  type="submit"
+                  className="w-full py-8 text-lg font-semibold"
+                >
+                  Save
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };

@@ -21,8 +21,6 @@ import { apiRoutes, getFirstCharCapitalized } from "@/config/common";
 import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
 import { useAxiosSWR } from "@/hooks/useAxiosSwr";
 import { Icons } from "@/lib/utils";
-import { format } from "date-fns";
-import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -278,6 +276,19 @@ function TotalAccount({ items }: { items: IItems[] }) {
 }
 
 function RunningAccount({ items }: { items: IItems[] }) {
+  const {
+    data: clientsData,
+    isLoading,
+    next,
+  } = useAxiosSWR<IUser>(
+    apiRoutes.PROTECTED.CLIENTS.LIST({
+      limit: 3,
+      offset: 0,
+      status: 1,
+      expand: "user_details,user_details.profile_picture",
+    }),
+  );
+  console.log("Running Project Clients:", clientsData);
   return (
     <Table className="">
       <TableHeader>
@@ -292,7 +303,7 @@ function RunningAccount({ items }: { items: IItems[] }) {
             Account Opening Date
           </TableHead>
           <TableHead className="text-center font-bold text-black">
-            Number of projects
+            Number of Running projects
           </TableHead>
           <TableHead className="text-center font-bold text-black">
             Category
@@ -303,45 +314,50 @@ function RunningAccount({ items }: { items: IItems[] }) {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {items.map((item) => {
-          const formattedAccountOpeningDate = format(
-            new Date(item.accountOpeningDate * 1000),
-            "dd-MM-yyyy",
-          );
+        {clientsData.map((client) => {
           return (
-            <TableRow key={item.accountNo}>
+            <TableRow key={client.id}>
               <TableCell className="text-center font-medium">
                 <div className="">
-                  <Link href={"clients/1234"} className="flex gap-2">
+                  <Link href={`clients/${client.id}`} className="flex gap-2">
                     <div className="relative h-12 w-12">
-                      <Image
-                        layout="fill"
-                        // objectFit="cover"
-                        style={{ borderRadius: "50%" }}
-                        quality={100}
-                        src={item.profileImage}
-                        alt="project image"
-                      />
+                      <Avatar className="h-12 w-12">
+                        <AvatarImage
+                          src={client?.user_details?.profile_picture?.image}
+                        />
+                        <AvatarFallback>
+                          {getFirstCharCapitalized(
+                            client?.user_details?.name || "U",
+                          )}
+                        </AvatarFallback>
+                      </Avatar>
                     </div>
                     <div className="flex flex-col items-start justify-center">
-                      <p className="font-bold hover:text-brand">{item.name}</p>
+                      <p className="font-bold hover:text-brand">
+                        {client.user_details?.name || "USER NAME NOT SET"}
+                      </p>
                     </div>
                   </Link>
                 </div>
               </TableCell>
               <TableCell className="text-center font-medium">
-                {item.accountNo}
+                {client.id}
               </TableCell>
               <TableCell className="text-center">
-                {formattedAccountOpeningDate}
+                {timezoneToDDMMYYYY(client?.date_joined)}
               </TableCell>
-              <TableCell className="text-center">{item.noOfProjects}</TableCell>
-              <TableCell className="text-center">{item.category}</TableCell>
               <TableCell className="text-center">
-                <Button variant={"ghost"}>
-                  <Icons.note className="h-6 w-6" />
-                </Button>
-                {/* {item.notes} */}
+                {client?.project_count}
+              </TableCell>
+              <TableCell className="text-center">Not Valid</TableCell>
+              <TableCell className="text-center">
+                {client?.user_details?.note ? (
+                  <NoteToolTip notes={client?.user_details?.note} />
+                ) : (
+                  <Button variant={"ghost"}>
+                    <Icons.addNote className="h-6 w-6" />
+                  </Button>
+                )}
               </TableCell>
             </TableRow>
           );

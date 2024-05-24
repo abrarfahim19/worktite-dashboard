@@ -34,7 +34,12 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Textarea } from "@/components/ui/textarea";
-import { apiRoutes, getTimeFromDate, second2DHMS } from "@/config/common";
+import {
+  apiRoutes,
+  getTimeFromDate,
+  IInvoice,
+  second2DHMS,
+} from "@/config/common";
 import { useAxiosSWR } from "@/hooks/useAxiosSwr";
 import useDataFetch from "@/hooks/useDataFetch";
 import { Icons } from "@/lib/utils";
@@ -45,7 +50,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { FromToTime } from "@/components/fromToTime";
-import { postInvoice } from "../manager/projectManager";
+import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
+import {
+  postInvoice,
+  updateInvoiceReceivedStatus,
+} from "../manager/projectManager";
 
 interface IProject {
   id: number;
@@ -87,7 +96,7 @@ const Page = ({
       <TotalTime totalTimeStamp={data?.durations} />
       <Running id={params.slug} />
       <TotalWorkingHours projectId={params.slug} />
-      <AppointmentList />
+      <MeetingList />
       <ProjectDetails />
       <FinalDocuments slug={params.slug} />
       <ProjectInvoices id={params.slug} />
@@ -285,34 +294,34 @@ const TotalWorkingHours = ({ projectId }: { projectId: string }) => {
   );
 };
 
-const appointmentData = [
+const meetingData = [
   {
     date: 1711159239,
     messageLink: "https://www.facebook.com",
     meetingNoteLink: "https://www.facebook.com",
-    appointmentType: "Online",
+    meetingType: "Online",
     status: "Pending",
-    appointmentLink: "https://www.facebook.com",
+    meetingLink: "https://www.facebook.com",
   },
   {
     date: 1711159239,
     messageLink: "https://www.facebook.com",
     meetingNoteLink: "https://www.facebook.com",
-    appointmentType: "Online",
+    meetingType: "Online",
     status: "Complete",
-    appointmentLink: "https://www.facebook.com",
+    meetingLink: "https://www.facebook.com",
   },
   {
     date: 1711159239,
     messageLink: "https://www.facebook.com",
     meetingNoteLink: "https://www.facebook.com",
-    appointmentType: "Online",
+    meetingType: "Online",
     status: "Complete",
-    appointmentLink: "https://www.facebook.com",
+    meetingLink: "https://www.facebook.com",
   },
 ];
 
-const AppointmentList = () => {
+const MeetingList = () => {
   return (
     <div className="mt-6 rounded-md bg-white p-4">
       {/* <h3 className="text-lg font-semibold">Project Details</h3> */}
@@ -330,7 +339,7 @@ const AppointmentList = () => {
               Meeting Note
             </TableHead>
             <TableHead className="text-center font-bold text-black">
-              Appointment Type
+              Meeting Type
             </TableHead>
             <TableHead className="text-center font-bold text-black">
               Status
@@ -341,7 +350,7 @@ const AppointmentList = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {appointmentData.map((item) => (
+          {meetingData.map((item) => (
             <TableRow key={item.date}>
               <TableCell className="text-center font-medium">
                 <div className="">
@@ -359,7 +368,7 @@ const AppointmentList = () => {
                 <MeetingNoteDialog />
               </TableCell>
               <TableCell className="text-center">
-                <p>{item.appointmentType}</p>
+                <p>{item.meetingType}</p>
               </TableCell>
               <TableCell className="text-center">
                 <p>{item.status}</p>
@@ -368,10 +377,10 @@ const AppointmentList = () => {
                 {item.status === "Pending" ? (
                   <div className="flex justify-between">
                     <Button className="w-32 py-8 text-xl">
-                      <Link href={item.appointmentLink}>Start</Link>
+                      <Link href={item.meetingLink}>Start</Link>
                     </Button>
                     <Button className="w-32 py-8 text-xl" variant={"secondary"}>
-                      <Link href={item.appointmentLink}>Finish</Link>
+                      <Link href={item.meetingLink}>Finish</Link>
                     </Button>
                   </div>
                 ) : (
@@ -387,7 +396,7 @@ const AppointmentList = () => {
           ))}
         </TableBody>
       </Table>
-      <NewAppointmentDialog />
+      <NewMeetingDialog />
     </div>
   );
 };
@@ -509,47 +518,24 @@ const FinalDocuments = ({ slug }: { slug: string }) => {
   );
 };
 
-const invoiceData = [
-  {
-    date: 1711159239,
-    invoiceNo: "INV001",
-    amount: 100,
-    status: "Pending",
-    paymentMethod: "Cash payment",
-    // dueDate: 1711184439,
-    downloadLink: "https://www.facebook.com",
-    receiveLink: "https://www.facebook.com",
-    received: true,
-  },
-  {
-    date: 1711159239,
-    invoiceNo: "INV001",
-    amount: 100,
-    status: "Pending",
-    paymentMethod: "Cash payment",
-    // dueDate: 1711184439,
-    downloadLink: "https://www.facebook.com",
-    receiveLink: "https://www.facebook.com",
-    received: true,
-  },
-  {
-    date: 1711159239,
-    invoiceNo: "INV001",
-    amount: 100,
-    status: "Pending",
-    paymentMethod: "Cash payment",
-    // dueDate: 1711184439,
-    downloadLink: "https://www.facebook.com",
-    receiveLink: "https://www.facebook.com",
-    received: false,
-  },
-];
-
 interface IAdditionalInvoice {
   id: string;
 }
 
 const ProjectInvoices: React.FC<IAdditionalInvoice> = ({ id }) => {
+  const { data: invoiceDatas, mutate } = useAxiosSWR<IInvoice>(
+    apiRoutes.PROTECTED.PROJECTS.INVOICE.LIST(13)({
+      limit: 10,
+      expand: "file",
+    }),
+  );
+  const updateReceivedStatus = async (invoiceId: number | number) => {
+    await updateInvoiceReceivedStatus(id, invoiceId, {
+      is_receive: true,
+    });
+    mutate();
+  };
+  console.log("INvoice are: ", invoiceDatas);
   return (
     <div className="mt-6 rounded-md bg-white p-4">
       <h3 className="text-lg font-semibold">Invoice</h3>
@@ -564,13 +550,16 @@ const ProjectInvoices: React.FC<IAdditionalInvoice> = ({ id }) => {
                 Invoice no
               </TableHead>
               <TableHead className="text-center font-bold text-black">
-                Amount
+                File Type
               </TableHead>
-              <TableHead className="text-center font-bold text-black">
+              {/* <TableHead className="text-center font-bold text-black">
                 Status
               </TableHead>
               <TableHead className="text-center font-bold text-black">
                 Payment Method
+              </TableHead> */}
+              <TableHead className="text-center font-bold text-black">
+                Project ID
               </TableHead>
               <TableHead className="text-center font-bold text-black">
                 Download
@@ -581,30 +570,29 @@ const ProjectInvoices: React.FC<IAdditionalInvoice> = ({ id }) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoiceData.map((item) => (
-              <TableRow key={item.invoiceNo}>
+            {invoiceDatas.map((item) => (
+              <TableRow key={item.id}>
                 <TableCell className="text-center font-medium">
-                  <p>{format(new Date(item.date * 1000), "dd/MM/yy")}</p>
+                  <p>{timezoneToDDMMYYYY(item.created_at)}</p>
                 </TableCell>
 
-                <TableCell className="text-center">#{item.invoiceNo}</TableCell>
-                <TableCell className="text-center">{item.amount} $</TableCell>
+                <TableCell className="text-center">#INV{item.id}</TableCell>
                 <TableCell className="text-center font-medium">
-                  <p>{item.status}</p>
+                  <p>{item.file_type === 1 ? "PDF" : "DOC"}</p>
                 </TableCell>
                 <TableCell className="text-center font-medium">
-                  <p>{item.paymentMethod}</p>
+                  <p>{item.project}</p>
                 </TableCell>
                 <TableCell className="">
                   <div className="flex items-center justify-center">
-                    <Link href={item.downloadLink}>
+                    <Link href={item.file ? item.file.file : "#"}>
                       <Icons.downloadBlack className="h-6 w-6" />
                     </Link>
                   </div>
                 </TableCell>
                 <TableCell className="">
-                  <div className="flex justify-end">
-                    {item.received ? (
+                  <div className="flex justify-center">
+                    {item.is_receive ? (
                       <Button
                         variant={"secondary"}
                         className="w-44 bg-green-100 py-8 text-lg font-semibold text-green-600"
@@ -612,7 +600,10 @@ const ProjectInvoices: React.FC<IAdditionalInvoice> = ({ id }) => {
                         Received
                       </Button>
                     ) : (
-                      <Button className="w-44 py-8 text-lg font-semibold">
+                      <Button
+                        className="w-44 py-8 text-lg font-semibold"
+                        onClick={() => updateReceivedStatus(item.id)}
+                      >
                         Receive
                       </Button>
                     )}
@@ -952,9 +943,9 @@ const OrderCompleteDialog = () => {
   );
 };
 
-const NewAppointmentDialog = () => {
+const NewMeetingDialog = () => {
   const [date, setDate] = useState<Date | undefined>(new Date());
-  const newAppointmentHandler = () => {
+  const newMeetingHandler = () => {
     console.log("Meeting Dialog Updated");
   };
   return (
@@ -965,7 +956,7 @@ const NewAppointmentDialog = () => {
           variant={"outline"}
           className="mt-4 border-brand px-8 py-8 text-lg font-semibold text-brand"
         >
-          New Appointment
+          New Meeting
         </Button>
         {/* </Button> */}
       </DialogTrigger>
@@ -1006,7 +997,7 @@ const NewAppointmentDialog = () => {
           <Button
             type="button"
             className="w-full py-8 text-lg font-semibold"
-            onClick={newAppointmentHandler}
+            onClick={newMeetingHandler}
           >
             Send
           </Button>

@@ -94,7 +94,7 @@ export const postInvoice = async (data: IPostFilePayload) => {
         apiRoutes.PROTECTED.PROJECTS.INVOICE.POST(data.id),
         {
           file_type: data.file_type,
-          file: response.id,
+          file: response.data.id,
         },
       );
       console.log("Invoice uploaded successfully:", invoiceresponse);
@@ -109,5 +109,21 @@ export const postInvoice = async (data: IPostFilePayload) => {
     }
   } catch (error) {
     console.error("Error uploading file:", error);
+  }
+};
+
+export const updateInvoiceReceivedStatus = async (
+  projectId: string | number,
+  invoiceID: string | number,
+  payload: any,
+) => {
+  try {
+    const response = await apiPut(
+      apiRoutes.PROTECTED.PROJECTS.INVOICE.UPDATE(projectId, invoiceID),
+      payload,
+    );
+    console.log("Invoice read status updated successfully:", response.data);
+  } catch (error) {
+    console.error("Error updating invoice read status:", error);
   }
 };

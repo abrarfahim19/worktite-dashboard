@@ -33,6 +33,7 @@ export const DragAndDrop = () => {
       </li>
     );
   });
+
   const handleUpload = async () => {
     if (acceptedFiles.length > 0) {
       const file = acceptedFiles[0];
@@ -51,7 +52,6 @@ export const DragAndDrop = () => {
           ...prevResponses,
           response.data,
         ]);
-        setA;
       } catch (error) {
         console.error("Error uploading file:", error);
       }

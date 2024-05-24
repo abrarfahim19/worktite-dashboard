@@ -35,6 +35,7 @@ export const apiRoutes = Object.freeze({
   API_BASE_SERVICE_PATH: PUBLIC_API_BASE_URL,
   AUTH: {
     USER_PROFILE: addQueryParams("/auth/api/profile/"),
+    USER_PROFILE_UPDATE: `/auth/api/profile/`,
     LOGIN: "/auth/api/signin/",
     SIGN_UP: "/auth/api/signup/",
     REFRESH_TOKEN: "/auth/api/token/refresh/",
@@ -134,6 +135,8 @@ export const apiRoutes = Object.freeze({
           ),
         POST: (project_pk: string | number) =>
           `/projects/api/v1/protected/projects/${project_pk}/invoice/`,
+        UPDATE: (project_pk: string | number, id: string | number) =>
+          `/projects/api/v1/protected/projects/${project_pk}/invoice/${id}/`,
       },
     },
     CLIENTS: {
@@ -144,17 +147,24 @@ export const apiRoutes = Object.freeze({
         CREATE: "",
         UPDATE: "",
         DELETE: "",
+        PUTNOTE: (client_id: string | number) =>
+          `/auth/api/v1/protected/notes/${client_id}/`,
       },
     },
     GENERAL: {
-      CHAT:{
+      CHAT: {
         LIST: addQueryParams("/general/api/v1/protected/chats/"),
-        GET: (id: string | number)=> addQueryParams(`/general/api/v1/protected/chats/${id}/`),
+        GET: (id: string | number) =>
+          addQueryParams(`/general/api/v1/protected/chats/${id}/`),
         MESSAGES: {
-          LIST: (chatId:string | number)=> addQueryParams(`/general/api/v1/protected/chats/${chatId}/messages/`),
-          POST: (chatId: string | number)=> `/general/api/v1/protected/chats/${chatId}/messages/`
-        }
-      }
-    }
+          LIST: (chatId: string | number) =>
+            addQueryParams(
+              `/general/api/v1/protected/chats/${chatId}/messages/`,
+            ),
+          POST: (chatId: string | number) =>
+            `/general/api/v1/protected/chats/${chatId}/messages/`,
+        },
+      },
+    },
   },
 });

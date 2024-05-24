@@ -165,7 +165,7 @@ const MeetingCard = () => {
         <div className="border-[1px] border-brand"></div>
         <div>
           <p className="font-bold">Meeting with Mark John</p>
-          <p>New Client</p>
+          <p>Existing Client</p>
           <p>Now</p>
         </div>
       </div>
@@ -184,7 +184,7 @@ const AppointmentCard = () => {
         <div className="border-[1px] border-brand"></div>
         <div>
           <p className="font-bold">Appointement with Mark John</p>
-          <p>Existing Client</p>
+          <p>New Client</p>
           <p>After 2 hour</p>
         </div>
       </div>

@@ -29,8 +29,10 @@ import Link from "next/link";
 import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { z } from "zod";
 import { IUser } from "../../clients/[slug]/page";
+import { imageUpload, putProfileData } from "../manager/manager";
 
 const Page = () => {
   const { data: completeUserData } = useDataFetch<IUser>(
@@ -41,7 +43,9 @@ const Page = () => {
   return (
     <div className="p-4">
       <BreadcrumbMenu />
-      <CoverPhoto />
+      <CoverPhoto
+        coverPhoto={completeUserData?.user_details?.cover_picture?.image || ""}
+      />
       <ProfilePhoto
         profilePhoto={
           completeUserData?.user_details?.profile_picture?.image || ""
@@ -55,59 +59,6 @@ const Page = () => {
 };
 
 export default Page;
-
-const userData = {
-  name: "John Doe",
-  about:
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.",
-  coverPhoto:
-    "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  profilePhoto:
-    "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-  role: "Admin",
-  phone: "+1234567890",
-  social: {
-    likedIn: "https://linkedin.com",
-    twitter: "https://twitter.com",
-    email: "john@email.com",
-    website: "",
-  },
-  runningProjects: [
-    {
-      id: 1,
-      name: "Project Name",
-      price: 1000,
-      priceType: "Hourly",
-      duration: 10,
-      startDate: 1713972946,
-      status: "completed",
-      imageUrl:
-        "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    },
-    {
-      id: 2,
-      name: "Project Name",
-      price: 1000,
-      priceType: "Hourly",
-      duration: 10,
-      startDate: 1713972946,
-      status: "Running",
-      imageUrl:
-        "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    },
-    {
-      id: 3,
-      name: "Project Name",
-      price: 1000,
-      priceType: "Hourly",
-      duration: 10,
-      startDate: 1713972946,
-      status: "Running",
-      imageUrl:
-        "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    },
-  ],
-};
 
 const BreadcrumbMenu = () => {
   return (
@@ -131,11 +82,16 @@ const BreadcrumbMenu = () => {
   );
 };
 
-const CoverPhoto = () => {
-  const [files, setFiles] = useState([]);
-  const { getRootProps, getInputProps } = useDropzone({
+interface CoverPhotoProps {
+  coverPhoto: string;
+}
+
+const CoverPhoto: React.FC<CoverPhotoProps> = ({ coverPhoto }) => {
+  const [files, setFiles] = useState<{ preview: string }[]>([]);
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    maxFiles: 1,
     accept: {
-      "image/*": [],
+      "image/jpeg": [".jpeg", ".jpg", ".png"],
     },
     onDrop: (acceptedFiles) => {
       setFiles(
@@ -148,7 +104,19 @@ const CoverPhoto = () => {
     },
   });
 
-  // console.log("Files are", files);
+  const coverPhotoUploadHandler = async () => {
+    if (acceptedFiles.length === 0) {
+      toast.error("Nothing to upload!", {
+        position: "top-right",
+      });
+    } else {
+      const file = acceptedFiles[0];
+      const formData = new FormData();
+      formData.append("image", file);
+      const imageID = await imageUpload(formData);
+      await putProfileData({ cover_picture: imageID });
+    }
+  };
   return (
     <div className="mt-4 w-full">
       <div
@@ -160,7 +128,7 @@ const CoverPhoto = () => {
       </div>
       <div className="relative h-[250px] w-[1000px] rounded-lg border-2 border-brand">
         <Image
-          src={files[0]?.preview ? files[0].preview : userData.profilePhoto}
+          src={files[0]?.preview ? files[0].preview : coverPhoto}
           fill={true}
           alt="Cover Photo"
           objectFit="cover"
@@ -169,6 +137,7 @@ const CoverPhoto = () => {
       <Button
         variant={"outline"}
         className="my-4 border-brand bg-transparent text-brand"
+        onClick={coverPhotoUploadHandler}
       >
         Update Cover Photo
       </Button>
@@ -181,10 +150,11 @@ interface ProfilePhotoProps {
 }
 
 const ProfilePhoto: React.FC<ProfilePhotoProps> = ({ profilePhoto }) => {
-  const [files, setFiles] = useState([]);
-  const { getRootProps, getInputProps } = useDropzone({
+  const [files, setFiles] = useState<{ preview: string }[]>([]);
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    maxFiles: 1,
     accept: {
-      "image/*": [],
+      "image/jpeg": [".jpeg", ".jpg", ".png"],
     },
     onDrop: (acceptedFiles) => {
       setFiles(
