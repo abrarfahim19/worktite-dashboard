@@ -2,7 +2,7 @@
 
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {Input} from "@/components/ui/input";
-import {apiRoutes, decodeDataFromBase64, encodeDataToBase64} from "@/config/common";
+import {apiRoutes, decodeDataFromBase64, encodeDataToBase64, frontendLinks} from "@/config/common";
 import {useAxiosSWR} from "@/hooks/useAxiosSwr";
 import {cn, Icons, truncateText} from "@/lib/utils";
 import {formatDate} from "date-fns";
@@ -55,10 +55,10 @@ const MessageSearch = () => {
 
 
 const MessageList = () => {
-    const {data: clients} = useAxiosSWR(apiRoutes.PROTECTED.GENERAL.CHAT.LIST({limit: 10, expand: 'receiver'}))
+    const {data: chats} = useAxiosSWR(apiRoutes.PROTECTED.GENERAL.CHAT.LIST({limit: 10, expand: 'receiver'}))
     return (
         <div className="mt-4 ">
-            {clients.map((userData) => (
+            {chats.map((userData) => (
                 <MessageListItem key={userData.id} user={userData}/>
             ))}
         </div>
@@ -73,7 +73,7 @@ const MessageListItem: React.FC<MessageListItemProps> = ({user}) => {
 
 
     return (
-        <Link href={`?chat=${encodedUrl}`}>
+        <Link href={frontendLinks.PRIVATE.CHAT(encodedUrl)}>
             <div aria-checked={user?.id==chatId}
                 className={cn("flex my-1.5 h-16 w-full items-center rounded-md hover:bg-brand ",user?.id==chatId && "bg-brand" )}>
                 <div className="flex h-full cursor-pointer w-full items-center justify-between">

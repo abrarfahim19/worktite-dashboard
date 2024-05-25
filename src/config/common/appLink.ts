@@ -10,6 +10,9 @@ export const frontendLinks = Object.freeze({
   },
   PRIVATE: {
     DASHBOARD: '/dashboard',
+    MESSAGE: (chat: string)=> `/dashboard/message?chat=${chat}`,
+    CHAT:(chat: string)=> `?chat=${chat}`,
+    CALENDER : "/dashboard/calender"
   },
 });
 

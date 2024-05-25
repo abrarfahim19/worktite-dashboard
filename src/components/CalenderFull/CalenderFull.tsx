@@ -1,6 +1,9 @@
 "use client";
 
+import {apiRoutes} from "@/config/common";
+import {useAxiosSWR} from "@/hooks/useAxiosSwr";
 import useDataFetch from "@/hooks/useDataFetch";
+import {cn} from "@/lib/utils";
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import { default as FullCalendar } from "@fullcalendar/react";
@@ -10,7 +13,7 @@ import {
   DayCellContentArg,
   EventContentArg,
 } from "fullcalendar/index.js";
-import { useEffect, useRef, useState } from "react";
+import {useEffect, useMemo, useRef, useState} from "react";
 
 const renderDayCellContent: CustomContentGenerator<DayCellContentArg> = (
   dayCellInfo,
@@ -19,19 +22,40 @@ const renderDayCellContent: CustomContentGenerator<DayCellContentArg> = (
     <div className="rounded bg-red-200 p-4">{dayCellInfo.date.getDate()}</div>
   );
 };
+interface Slot {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  start_at: string;
+  end_at: string;
+  created_by: number;
+}
 
 interface IEvent {
+  id: string;
   title: string;
   date: string;
+  event_type: string;
+  slot: Slot;
 }
 
 interface CalenderFullProps {
   date: Date;
+  setDayEvents: React.Dispatch<React.SetStateAction<IEvent[]>>;
 }
-export const CalendarFull: React.FC<CalenderFullProps> = ({ date }) => {
+export const CalendarFull: React.FC<CalenderFullProps> = ({ date , setDayEvents}) => {
+  const monthYearQuery = "".concat(date.getFullYear().toString(), "-",(date.getMonth()+1).toString().padStart(2, '0'))
   const calendarRef = useRef(null);
-  const [data, setData] = useState<IEvent[]>([]);
+  const {data: appointments} = useAxiosSWR<IEvent>(apiRoutes.PROTECTED.GENERAL.CALENDER.APPOINTMENTS.LIST({month_year: monthYearQuery, limit:30}))
+  const {data: meetings} = useAxiosSWR<IEvent>(apiRoutes.PROTECTED.GENERAL.CALENDER.MEETINGS.LIST({month_year: monthYearQuery, limit:30}))
+  const events = useMemo(() => {
+    if (!appointments && !meetings) return [];
+    const modifiedAppointments = appointments.map(e => ({ ...e, id: `${e?.id}-${e?.event_type}` }));
+    const modifiedMeetings = meetings.map(e => ({ ...e, id: `${e?.id}-${e?.event_type}` }));
+    return [...modifiedAppointments, ...modifiedMeetings];
+  }, [appointments, meetings]);
 
+  console.log("appointments", appointments, meetings, events.length)
   function goToPerticularDate() {
     if (calendarRef?.current) {
       const calendarApi = calendarRef.current.getApi();
@@ -40,50 +64,27 @@ export const CalendarFull: React.FC<CalenderFullProps> = ({ date }) => {
     }
   }
   useEffect(() => {
-    // console.log("The Date is changed", date);
     goToPerticularDate();
   }, [date]);
 
   const handleDateClick = (arg: DateClickArg) => {
-    alert(arg.dateStr);
+    setDayEvents(events.filter((e)=>e?.date === arg.dateStr))
   };
-  // const loadEvents: EventSourceInput = (
-  //   fetchInfo,
-  //   successCallback,
-  //   failureCallback,
-  // ) => {
-  //   console.log("The Func is called");
-  //   successCallback([
-  //     { title: "Mr. Smith", date: "2024-05-01" },
-  //     { title: "Mr. Sanderheitkeith", date: "2024-05-04" },
-  //   ]);
-  // };
-  const { data: eventsData, isLoading } = useDataFetch<IEvent[]>(
-    "http://localhost:8000/events",
-  );
-  console.log("Data is", eventsData);
   return (
     <>
       <FullCalendar
         ref={calendarRef}
         plugins={[dayGridPlugin, interactionPlugin]}
-        // viewClassNames={"table-fixed"}
-        // dayCellClassNames={(arg) => {
-        //   // console.log("this is arg");
-        //   return `${arg.date === new Date("2024-05-04") ? "bg-red-400" : "bg-gray-500 "}  rounded-lg m-2 border-0`;
-        // }}
-        // dayCellClassNames={"bg-white m-1 rounded-3xl border-0"}
         dayCellDidMount={() => ""}
         headerToolbar={{
           right: "",
           center: "title",
           left: "",
         }}
-        // allDayContent={renderDayCellContent}
         eventTextColor="white"
         themeSystem="Superhero"
-        // dateClick={handleDateClick}
-        events={eventsData}
+        dateClick={handleDateClick}
+        events={events}
         eventContent={renderEventContent}
       />
     </>
@@ -93,9 +94,10 @@ export const CalendarFull: React.FC<CalenderFullProps> = ({ date }) => {
 const renderEventContent: CustomContentGenerator<EventContentArg> = (
   eventInfo,
 ) => {
+  console.log("evnetinfo", eventInfo)
   return (
-    <div className="bg-brand">
-      <b>{eventInfo.timeText}</b>
+    <div className={cn("bg-brand cursor-pointer", eventInfo?.event?.event_type && "bg-green-300")}>
+      <b>{eventInfo.event?.event_type}</b>
       <i>{eventInfo.event.title}</i>
     </div>
   );

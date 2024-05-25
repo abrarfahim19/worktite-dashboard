@@ -20,12 +20,8 @@ import {useAxiosSWR} from "@/hooks/useAxiosSwr";
 import {truncateText} from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
-import {useMemo, useState} from "react";
+import {useMemo} from "react";
 
-interface FieldType {
-    value: string;
-    label: string;
-}
 
 interface Category {
     id: number;
@@ -78,28 +74,35 @@ interface ProjectTab {
     [key: string]: any;
 }
 
+enum ProjectTabValues {
+    ACTIVE = 'active',
+    COMPLETE = 'complete',
+    CANCELLED = 'cancelled',
+    PENDING = 'pending'
+}
+
 const projectData = [
     {
         name: "Active project",
-        value: "active",
+        value: ProjectTabValues.ACTIVE,
         numberOfProjects: 1,
         status: STATUS.ACTIVE
     },
     {
         name: "Complete project",
-        value: "complete",
+        value: ProjectTabValues.COMPLETE,
         numberOfProjects: 1,
         status: STATUS.COMPLETE
     },
     {
         name: "Cancelled project",
-        value: "cancelled",
+        value: ProjectTabValues.CANCELLED,
         numberOfProjects: 1,
         status: STATUS.CANCELLED
     },
     {
         name: "Pending project",
-        value: "pending",
+        value: ProjectTabValues.PENDING,
         numberOfProjects: 1,
         status: STATUS.PENDING
     },
@@ -119,51 +122,35 @@ const Page = () => {
             ...item,
             numberOfProjects: countMap.get(item.status)
         }));
-        // projectStatusCount.forEach(item => {
-        //     if (!merged.some(mergedItem => mergedItem.status === item.status)) {
-        //         merged.push({
-        //             status: item.status,
-        //             count: item.count,
-        //             value: 'other'
-        //         });
-        //     }
-        // });
 
         return merged;
     }, [projectStatusCount])
-    const [activeTab, setActiveTab] = useState(projectData[0].value);
-    const handleTabChange = (tab: string) => {
-        setActiveTab(tab);
-    };
     return (
         <div className="">
-            <Tabs defaultValue="active" className="w-full">
+            <Tabs defaultValue={ProjectTabValues.ACTIVE} className="w-full">
                 <TabsList className="bg-transparent">
                     {ProjectDataModified.map((project) => {
                         return (
                             <TabsTrigger
-                                className="py-0 text-sm data-[state=active]:rounded-none data-[state=active]:border-b-brand data-[state=active]:bg-transparent data-[state=active]:text-brand data-[state=active]:shadow-none "
+                                className="py-0 text-sm group data-[state=active]:rounded-none data-[state=active]:border-b-brand data-[state=active]:bg-transparent data-[state=active]:text-brand data-[state=active]:shadow-none "
                                 value={project.value}
                                 key={project.name}
-                                onClick={() => {
-                                    handleTabChange(project.value);
-                                }}
                             >
                                 <div className="flex flex-col gap-2">
                                     <div className="flex gap-2">
                                         <p
-                                            className={`${activeTab === project.value ? "font-semibold" : ""} text-md `}
+                                            className="group-data-[state=active]:font-semibold group-data-[state=inactive]:text-md"
                                         >
                                             {project.name}
                                         </p>
                                         <Badge
-                                            className={`${activeTab === project.value ? "bg-brand" : "bg-softDark"} `}
+                                            className="group-data-[state=active]:bg-brand group-data-[state=inactive]:bg-softDark"
                                         >
                                             {project.numberOfProjects}
                                         </Badge>
                                     </div>
                                     <div
-                                        className={`h-[2px] w-8 ${activeTab === project.value ? "bg-brand" : "bg-transparent"} `}
+                                        className="h-[2px] w-8 group-data-[state=active]:bg-brand group-data-[state=inactive]:bg-transparent"
                                     ></div>
                                 </div>
                             </TabsTrigger>
