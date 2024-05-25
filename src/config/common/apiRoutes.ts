@@ -4,8 +4,7 @@ export interface IQueryParams {
     limit?: number;
     offset?: number;
     expand?: string;
-    cliendt?: string;
-
+    fields?: string;
     [key: string]: any;
 }
 
