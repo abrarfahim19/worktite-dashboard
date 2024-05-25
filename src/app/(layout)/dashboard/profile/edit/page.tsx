@@ -37,22 +37,27 @@ import { imageUpload, putProfileData } from "../manager/manager";
 const Page = () => {
   const { data: completeUserData } = useDataFetch<IUser>(
     apiRoutes.AUTH.USER_PROFILE({
-      expand: "user_details,user_details.profile_picture",
+      expand:
+        "user_details,user_details.profile_picture,user_details.cover_picture",
     }),
   );
   return (
     <div className="p-4">
       <BreadcrumbMenu />
-      <CoverPhoto
-        coverPhoto={completeUserData?.user_details?.cover_picture?.image || ""}
-      />
-      <ProfilePhoto
-        profilePhoto={
-          completeUserData?.user_details?.profile_picture?.image || ""
-        }
-      />
       {completeUserData && (
-        <ProfileDetails profileData={completeUserData || {}} />
+        <div>
+          <CoverPhoto
+            coverPhoto={
+              completeUserData?.user_details?.cover_picture?.image || ""
+            }
+          />
+          <ProfilePhoto
+            profilePhoto={
+              completeUserData?.user_details?.profile_picture?.image || ""
+            }
+          />
+          <ProfileDetails profileData={completeUserData} />
+        </div>
       )}
     </div>
   );
@@ -167,6 +172,20 @@ const ProfilePhoto: React.FC<ProfilePhotoProps> = ({ profilePhoto }) => {
     },
   });
 
+  const profilePhotoUploadHandler = async () => {
+    if (acceptedFiles.length === 0) {
+      toast.error("Nothing to upload!", {
+        position: "top-right",
+      });
+    } else {
+      const file = acceptedFiles[0];
+      const formData = new FormData();
+      formData.append("image", file);
+      const imageID = await imageUpload(formData);
+      await putProfileData({ profile_picture: imageID });
+    }
+  };
+
   // console.log("Files are", files);
   return (
     <div className="w-full">
@@ -192,6 +211,7 @@ const ProfilePhoto: React.FC<ProfilePhotoProps> = ({ profilePhoto }) => {
       <Button
         variant={"outline"}
         className="my-4 border-brand bg-transparent text-brand"
+        onClick={profilePhotoUploadHandler}
       >
         Update Profile Picture
       </Button>
@@ -224,8 +244,15 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profileData }) => {
       about: profileData?.user_details?.about || "",
     },
   });
-  const onSubmit = (data: z.infer<typeof FormSchema>) => {
-    console.log(data);
+  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    const payload = {
+      name: data.name,
+      phone: data.phone,
+      location: data.location,
+      about: data.about,
+    };
+    console.log("Payload", payload);
+    await putProfileData(payload);
   };
 
   return (
@@ -263,6 +290,7 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profileData }) => {
                   <FormControl>
                     <Input
                       placeholder="Position"
+                      disabled
                       {...field}
                       className="border-2 border-black"
                     />
@@ -279,6 +307,7 @@ const ProfileDetails: React.FC<ProfileDetailsProps> = ({ profileData }) => {
                   <FormLabel>E-mail</FormLabel>
                   <FormControl>
                     <Input
+                      disabled
                       placeholder="Email"
                       {...field}
                       className="border-2 border-black"

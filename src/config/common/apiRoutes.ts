@@ -166,5 +166,9 @@ export const apiRoutes = Object.freeze({
         },
       },
     },
+    PUBLISH_PROJECT: {
+      LIST: addQueryParams("/projects/api/v1/protected/publish-projects/"),
+      POST: "/projects/api/v1/protected/publish-projects/",
+    },
   },
 });

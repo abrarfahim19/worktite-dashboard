@@ -2,7 +2,6 @@
 import { apiDelete, apiPost, apiRoutes } from "@/config/common";
 import { Icons } from "@/lib/utils";
 import Image from "next/image";
-import { useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { Button } from "../ui/button";
 
@@ -15,8 +14,15 @@ interface ImageResponse {
   created_by: number;
 }
 
-export const DragAndDrop = () => {
-  const [uploadResponses, setUploadResponses] = useState<ImageResponse[]>([]);
+interface UploadImageProps {
+  uploadResponses: ImageResponse[];
+  setUploadResponses: React.Dispatch<React.SetStateAction<ImageResponse[]>>;
+}
+
+export const DragAndDrop: React.FC<UploadImageProps> = ({
+  uploadResponses,
+  setUploadResponses,
+}) => {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
     accept: {

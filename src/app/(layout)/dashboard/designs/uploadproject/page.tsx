@@ -29,6 +29,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Icons } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,12 +44,25 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+interface ImageResponse {
+  id: number;
+  thumbnail: string;
+  created_at: string;
+  updated_at: string;
+  image: string;
+  created_by: number;
+}
+
 const Page = () => {
+  const [uploadResponses, setUploadResponses] = useState<ImageResponse[]>([]);
   return (
     <div className="p-4">
       <BreadcrumbMenu />
-      <UploadImage />
-      <ProjectDetails />
+      <UploadImage
+        uploadResponses={uploadResponses}
+        setUploadResponses={setUploadResponses}
+      />
+      <ProjectDetails uploadResponses={uploadResponses} />
     </div>
   );
 };
@@ -71,61 +91,88 @@ const BreadcrumbMenu = () => {
   );
 };
 
-const UploadImage = () => {
+interface UploadImageProps {
+  uploadResponses: ImageResponse[];
+  setUploadResponses: React.Dispatch<React.SetStateAction<ImageResponse[]>>;
+}
+
+const UploadImage: React.FC<UploadImageProps> = ({
+  uploadResponses,
+  setUploadResponses,
+}) => {
   return (
     <div className="mt-4">
       <p className="mb-4 font-bold">Upload Image</p>
       <div className="grid grid-cols-2 gap-4">
         <div className="col-span-2 ">
           <div className="mb-10 h-[300px]">
-            <DragAndDrop />
+            <DragAndDrop
+              uploadResponses={uploadResponses}
+              setUploadResponses={setUploadResponses}
+            />
           </div>
-
-          {/* <Button className="mt-2 flex w-full gap-2">
-            <Icons.uploadWhite className="h-4 w-4" />
-            <p>Upload Image</p>
-          </Button> */}
         </div>
-        {/* <div className="col-span-1 rounded bg-white p-4">
-          <ImageLoadProgress name="Photo1.jpg" progress={0} />
-          <ImageLoadProgress name="Photo2.jpg" progress={0} />
-          <ImageLoadProgress name="Photo3.jpg" progress={0} />
-          <ImageLoadProgress name="Photo4.jpg" progress={0} />
-          <Button className="mt-2 flex w-full gap-2">
-            <Icons.uploadWhite className="h-4 w-4" />
-            <p>Upload Image</p>
-          </Button>
-        </div> */}
       </div>
     </div>
   );
 };
 
 const FormSchema = z.record(
-  z.string().min(1, {
-    message: "Value should be at least 1 character long",
-  }),
+  z.string().min(1, { message: "Value should be at least 1 character long" }),
 );
 
-const ProjectDetails = () => {
-  const [fieldsData, setFieldsData] = useState<z.infer<typeof FormSchema>>({
-    Title: "",
-    "Pricing Type": "",
-    "Design Type": "",
-    "Total Price": "",
-    "Duration of the Project": "",
-    Quality: "",
-    Category: "",
-    "Description About Project": "",
-  });
+interface ProjectDetailsProps {
+  uploadResponses: ImageResponse[];
+}
+
+const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
+  const [extraFieldsData, setExtraFieldsData] = useState<
+    z.infer<typeof FormSchema>
+  >({});
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
-    defaultValues: fieldsData,
+    defaultValues: {
+      title: "",
+      pricing_type: "",
+      design_type: "",
+      price: "",
+      duration: "",
+      quantity: "",
+      category: "",
+      project_type: "",
+      description: "",
+    },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    console.log(data);
-  }
+  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    const images = uploadResponses.map((image) => image.id);
+    const transformedData = {
+      title: data["title"],
+      pricing_type: Math.round(parseInt(data["pricing_type"])),
+      design_type: Math.round(parseInt(data["design_type"])),
+      price: data["price"],
+      duration: Math.round(parseInt(data["duration"])),
+      quantity: Math.round(parseInt(data["quantity"])),
+      category: Math.round(parseInt(data["category"])),
+      project_type: Math.round(parseInt(data["project_type"])),
+      description: data["description"],
+    };
+    const extra_fields = {
+      ...extraFieldsData,
+    };
+    const payload = {
+      ...transformedData,
+      extra_fields,
+      images,
+    };
+    console.log("This is data", extraFieldsData);
+    // const payload = {
+    //   ...data,
+    //   images,
+    // };
+    // console.log("Upload project data: ", payload);
+    // await uploadNewProject(payload);
+  };
   return (
     <div className="mt-4">
       <p className="mb-2 font-semibold">Project Details</p>
@@ -135,54 +182,244 @@ const ProjectDetails = () => {
             onSubmit={form.handleSubmit(onSubmit)}
             className="grid grid-cols-2 gap-x-4 gap-y-2"
           >
-            {Object.keys(fieldsData).map((key) => {
-              if (key === "Description About Project")
-                return (
-                  <div key={key} className="col-span-2 w-full">
-                    <FormField
-                      key={key}
-                      control={form.control}
-                      name={key}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>{key}</FormLabel>
-                          <FormControl>
-                            <Textarea
-                              placeholder={key}
-                              {...field}
-                              className="border-2 border-black bg-transparent"
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                );
-              return (
-                <FormField
-                  key={key}
-                  control={form.control}
-                  name={key}
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{key}</FormLabel>
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Title</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Title"
+                        {...field}
+                        className="border-2 border-black bg-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="pricing_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Pricing Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value.toString()}
+                    >
                       <FormControl>
-                        <Input
-                          placeholder={key}
-                          {...field}
-                          className="border-2 border-black"
-                        />
+                        <SelectTrigger className="w-full border-2 border-black bg-transparent">
+                          <SelectValue placeholder="Select Pricing Type" />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        <SelectItem value="1">Hourly</SelectItem>
+                        <SelectItem value="2">Monthly</SelectItem>
+                        <SelectItem value="3">Project Based</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="design_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Design Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full border-2 border-black bg-transparent">
+                          <SelectValue placeholder="Select Design Type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">Simple</SelectItem>
+                        <SelectItem value="2">Complex</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="price"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Total Price</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Total Price of the Project"
+                        {...field}
+                        className="border-2 border-black bg-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="duration"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Duration (number of days)</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Duration of the project"
+                        {...field}
+                        className="border-2 border-black bg-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="quantity"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Quantity</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Quantity"
+                        {...field}
+                        className="border-2 border-black bg-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="project_type"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Project Type</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full border-2 border-black bg-transparent">
+                          <SelectValue placeholder="Project Type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">ABCD</SelectItem>
+                        <SelectItem value="2">EFGH</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-1 w-full">
+              <FormField
+                control={form.control}
+                name="category"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Category</FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value.toString()}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="w-full border-2 border-black bg-transparent">
+                          <SelectValue placeholder="Category Type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="1">Table</SelectItem>
+                        <SelectItem value="2">Chair</SelectItem>
+                        <SelectItem value="3">Bookself</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage className="" />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            <div className="col-span-2 w-full">
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description about the project</FormLabel>
+                    <FormControl>
+                      <Textarea
+                        placeholder="Description"
+                        {...field}
+                        className="border-2 border-black bg-transparent"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
+            {Object.keys(extraFieldsData).map((key) => {
+              return (
+                <div key={key} className="col-span-1 w-full">
+                  <FormField
+                    control={form.control}
+                    name={key}
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{key}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder={key}
+                            {...field}
+                            className="border-2 border-black bg-transparent"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               );
             })}
+
             <div className="col-span-2">
-              <AddFieldDialogue setFieldsData={setFieldsData} />
+              <AddFieldDialogue setFieldsData={setExtraFieldsData} />
             </div>
+
             <div className="col-span-2 mt-4">
               <Button size={"lg"} type="submit">
                 Publish
@@ -194,8 +431,6 @@ const ProjectDetails = () => {
           </form>
         </Form>
       </div>
-
-      {/* </div> */}
     </div>
   );
 };
