@@ -1,5 +1,5 @@
 "use client";
-import { Timeline } from "@/components/timeline";
+import { StaticTimeline } from "@/components/timeline";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,12 +22,26 @@ import { Icons } from "@/lib/utils";
 import Link from "next/link";
 import { useDropzone } from "react-dropzone";
 
+const steps = [
+  {
+    name: "General documents",
+    is_complete: true,
+  },
+  {
+    name: "Invoice",
+    is_complete: true,
+  },
+  {
+    name: "Confirmation",
+    is_complete: false,
+  },
+];
 const Page = () => {
   return (
     <div>
       <div className="px-4">
         <BreadcrumbMenu />
-        <Timeline />
+        <StaticTimeline steps={steps} />
         <UploadDocuments />
         <CreateInvoice />
       </div>

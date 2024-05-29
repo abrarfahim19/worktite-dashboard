@@ -1,44 +1,39 @@
-import { format } from "date-fns";
-import { useState } from "react";
+import { apiRoutes, ITimeSlot } from "@/config/common";
+import useDataFetch from "@/hooks/useDataFetch";
+import { Dispatch, SetStateAction } from "react";
 import { DayPicker } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { Button } from "../ui/button";
+import { Skeleton } from "../ui/skeleton";
 
-const dates = [
-  { id: "afdafe", time: "8:00 - 9:00 PM", disabled: true },
-  { id: "afdafg", time: "9:00 - 10:00 PM", disabled: false },
-  { id: "afd3fe", time: "10:00 - 11:00 PM", disabled: false },
-  { id: "ard3fe", time: "11:00 - 12:00 PM", disabled: false },
-  { id: "afdafr", time: "9:00 - 10:00 PM", disabled: false },
-  { id: "afdrfe", time: "10:00 - 11:00 PM", disabled: false },
-];
-
-interface IAvailableDate {
-  id: string;
-  time: string;
-  disabled: boolean;
+interface IDatePickerProps {
+  selected: Date | undefined;
+  setSelected: Dispatch<SetStateAction<Date | undefined>>;
+  setScheduleSelected: (id: number) => void;
+  scheduleSelected: number;
 }
-export const DatePicker = () => {
-  const [selected, setSelected] = useState<Date>();
-  const [availableTime, setAvailableTime] = useState<IAvailableDate[]>(dates);
-  const [scheduleSelected, setScheduleSelected] = useState<number>();
-
-  const scheduleSelectionHandler = (index: number) => {
-    if (scheduleSelected === index) {
-      console.log("This is in list");
-      // setScheduleSelected((prev) => prev.filter((item) => item !== index));
-      setScheduleSelected(-1);
-    } else {
-      console.log("Not in list");
-      // setScheduleSelected((prev) => prev.concat(index));
-      setScheduleSelected(index);
+export const DatePicker: React.FC<IDatePickerProps> = ({
+  selected,
+  setSelected,
+  setScheduleSelected,
+  scheduleSelected,
+}) => {
+  const {
+    data: availableTimeSlots,
+    isLoading,
+    error,
+  } = useDataFetch<ITimeSlot[]>(
+    apiRoutes.PUBLIC.APPOINTMENT.SLOTS({ date: selected }),
+  );
+  const scheduleSelectionHandler = (id: number) => {
+    if (scheduleSelected === id) {
+      setScheduleSelected(0);
+      return;
     }
+    setScheduleSelected(id);
+    console.log("Selected ID: ", id);
   };
 
-  let footer = <p>Please pick a day.</p>;
-  if (selected) {
-    footer = <p>You picked {format(selected, "PP")}.</p>;
-  }
   return (
     <div className="bg-white pb-10">
       <DayPicker
@@ -53,26 +48,29 @@ export const DatePicker = () => {
       />
       <p className="my-4 font-semibold">Available Slot</p>
       <div className="grid grid-cols-3 gap-x-6 gap-y-4">
-        {availableTime.map((item, index) => {
-          return (
-            <Button
-              className="w-full"
-              disabled={item.disabled}
-              variant={
-                item.disabled
-                  ? "secondary"
-                  : scheduleSelected === index
-                    ? "default"
-                    : "secondary"
-              }
-              // variant={"secondary"}
-              key={item.id}
-              onClick={() => scheduleSelectionHandler(index)}
-            >
-              {item.time}
-            </Button>
-          );
-        })}
+        {isLoading
+          ? Array.from({ length: 6 }).map((_, index) => (
+              <Skeleton key={index} className="h-10 w-full bg-gray-500" />
+            ))
+          : availableTimeSlots?.map((item, index) => {
+              return (
+                <Button
+                  className="w-full"
+                  disabled={item.disabled}
+                  variant={
+                    item.disabled
+                      ? "secondary"
+                      : scheduleSelected === item.id
+                        ? "default"
+                        : "secondary"
+                  }
+                  key={item.id}
+                  onClick={() => scheduleSelectionHandler(item.id)}
+                >
+                  {item.start_at} - {item.end_at}
+                </Button>
+              );
+            })}
       </div>
     </div>
   );

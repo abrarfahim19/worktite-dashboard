@@ -1,9 +1,40 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import Link from "next/link";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  InputOTP,
+  InputOTPGroup,
+  InputOTPSlot,
+} from "@/components/ui/input-otp";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+const FormSchema = z.object({
+  pin: z.string().min(6, {
+    message: "Your one-time verification code must be 6 characters.",
+  }),
+});
 
 const Page = () => {
+  const form = useForm<z.infer<typeof FormSchema>>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      pin: "",
+    },
+  });
+
+  const onSubmit = (data: z.infer<typeof FormSchema>) => {
+    console.log("This is the Pin:", data);
+  };
   return (
     <div className="container p-20">
       <div className="flex items-center justify-center ">
@@ -12,22 +43,60 @@ const Page = () => {
           <p className="mb-4">
             We sent a code to your Email. Please enter the code below
           </p>
-          <Label htmlFor="code">Verification code</Label>
+          {/* <Label htmlFor="code">Verification code</Label>
           <Input
             type="text"
             id="code"
             className="mb-4"
             placeholder="12345678"
-          />
-          <div className="mb-4 flex items-center justify-start gap-2">
-            <p>Didn’t get the code?</p>
-            <Button variant={"link"} className="m-0 inline p-0 font-semibold">
-              Send again
-            </Button>
-          </div>
-          <Link href={"/resetpassword"}>
-            <Button className="mb-4 w-full">Verify Code</Button>
-          </Link>
+          /> */}
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="w-2/3 space-y-2"
+            >
+              <FormField
+                control={form.control}
+                name="pin"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>One-Time Verification Code</FormLabel>
+                    <FormControl>
+                      <InputOTP maxLength={6} {...field}>
+                        <InputOTPGroup>
+                          <InputOTPSlot index={0} />
+                          <InputOTPSlot index={1} />
+                          <InputOTPSlot index={2} />
+                          <InputOTPSlot index={3} />
+                          <InputOTPSlot index={4} />
+                          <InputOTPSlot index={5} />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    </FormControl>
+                    {/* <FormDescription>
+                      Please enter the one-time verification code sent to your
+                      email.
+                    </FormDescription> */}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="flex items-center justify-start gap-2">
+                <p>Didn’t get the code?</p>
+                <Button
+                  variant={"link"}
+                  className="m-0 inline p-0 font-semibold"
+                >
+                  Send again
+                </Button>
+              </div>
+              <Button type="submit" className="mb-4 w-full">
+                Verify Code
+              </Button>
+              {/* <Button type="submit">Submit</Button> */}
+            </form>
+          </Form>
         </div>
       </div>
     </div>

@@ -1,3 +1,5 @@
+"use client";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,8 +10,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  apiRoutes,
+  IUploadedProject,
+  PLACE_HOLDER_IMAGE,
+} from "@/config/common";
+import { useAxiosSWR } from "@/hooks/useAxiosSwr";
 import { Icons } from "@/lib/utils";
-import { differenceInDays } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -41,25 +48,11 @@ const Header = () => {
   );
 };
 
-const publishedProjects = [
-  {
-    name: "Chesterfield Table",
-    projectImage:
-      "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    category: "Kitchen table",
-    pricingType: "Hourly",
-    quantity: 4,
-    accountHolderImage:
-      "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    accountHolder: "Jane Cooper",
-    projectType: "Simple",
-    pricing: 15,
-    projectDuration: 1710838113 - 1710838013,
-    projectID: "PRJ001",
-  },
-];
-
 const ProjectDetails = () => {
+  const { data: uploadedProjects, isLoading } = useAxiosSWR<IUploadedProject>(
+    apiRoutes.PROTECTED.PUBLISH_PROJECT.LIST({ limit: 10, expand: "images" }),
+  );
+  console.log("Data is: ", uploadedProjects);
   return (
     <div className="rounded-md bg-white px-4">
       <Table className="">
@@ -89,16 +82,9 @@ const ProjectDetails = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {publishedProjects.map((item) => {
-            const timestamp = item.projectDuration;
-            const days = Math.floor(timestamp / (24 * 60 * 60));
-            const hours = Math.floor((timestamp % (24 * 60 * 60)) / (60 * 60));
-            const minutes = Math.floor((timestamp % (60 * 60)) / 60);
-            const seconds = timestamp % 60;
-
-            const duration = `${days}d-${hours}h-${minutes}m-${seconds}s`;
+          {uploadedProjects.map((item) => {
             return (
-              <TableRow key={item.projectID}>
+              <TableRow key={item.id}>
                 <TableCell className="text-center font-medium">
                   <div className="flex gap-2">
                     <div className="relative h-14 w-14 rounded-md">
@@ -106,14 +92,18 @@ const ProjectDetails = () => {
                         layout="fill"
                         objectFit="cover"
                         quality={100}
-                        src={item.projectImage}
+                        src={
+                          item.images[0].image
+                            ? item.images[0].image
+                            : PLACE_HOLDER_IMAGE
+                        }
                         alt="project image"
                       />
                     </div>
                     <div className="flex flex-col items-start justify-center">
-                      <p className="font-bold">{item.name}</p>
+                      <p className="font-bold">{item.title}</p>
                       <p>Category: {item.category}</p>
-                      <p>Pricing Type: {item.pricingType}</p>
+                      <p>Pricing: {item.pricing_type}</p>
                     </div>
                   </div>
                 </TableCell>
@@ -121,27 +111,29 @@ const ProjectDetails = () => {
                 <TableCell className="">
                   <div className="flex items-center justify-center gap-2 self-center">
                     <Avatar className="h-12 w-12">
-                      <AvatarImage src={item.accountHolderImage} />
+                      <AvatarImage src={PLACE_HOLDER_IMAGE} />
                       <AvatarFallback></AvatarFallback>
                     </Avatar>
-                    <p>{item.accountHolder}</p>
+                    <p>THIS IS NOT AVAILBLE</p>
                   </div>
                 </TableCell>
                 <TableCell className="text-center">
-                  <p>{item.projectType}</p>
+                  <p>{item.project_type}</p>
                 </TableCell>
                 <TableCell className="text-center">
-                  <p>Per hour: ${item.pricing}</p>
+                  <p>${item.price}</p>
                 </TableCell>
                 <TableCell className="text-center">
-                  <p>
-                    {differenceInDays(new Date(), item.projectDuration * 1000)}
-                  </p>
+                  <p>{item.duration} Days</p>
                 </TableCell>
                 <TableCell className="text-center">
-                  <Button variant={"link"}>
-                    <p className="font-semibold text-brand underline">Update</p>
-                  </Button>
+                  <Link href={`designs/${item.id}`}>
+                    <Button variant={"link"}>
+                      <p className="font-semibold text-brand underline">
+                        Update
+                      </p>
+                    </Button>
+                  </Link>
                 </TableCell>
               </TableRow>
             );

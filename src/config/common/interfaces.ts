@@ -57,3 +57,34 @@ export interface IInvoice {
   project: number;
   file: IFiles | null;
 }
+
+export interface IUploadedProject {
+  id: number;
+  project_type: string;
+  design_type: string;
+  pricing_type: string;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  description: string;
+  price: string;
+  duration: number;
+  quantity: number;
+  extra_fields: Record<string, string>;
+  active: boolean;
+  created_by: number;
+  category: number;
+  images: IMAGE[];
+  file: any[];
+  three_d_file: any[];
+}
+
+export interface ITimeSlot {
+  id: number;
+  disabled: boolean;
+  created_at: string;
+  updated_at: string;
+  start_at: string;
+  end_at: string;
+  created_by: number;
+}

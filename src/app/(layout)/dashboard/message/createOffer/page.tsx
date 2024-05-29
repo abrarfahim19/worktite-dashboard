@@ -1,3 +1,6 @@
+"use client";
+
+import { StaticTimeline } from "@/components/timeline";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Breadcrumb,
@@ -15,12 +18,26 @@ import { Icons } from "@/lib/utils";
 import { format } from "date-fns";
 import Link from "next/link";
 
+const steps = [
+  {
+    name: "General documents",
+    is_complete: true,
+  },
+  {
+    name: "Invoice",
+    is_complete: false,
+  },
+  {
+    name: "Confirmation",
+    is_complete: false,
+  },
+];
 const Page = () => {
   return (
     <div>
       <div className="px-4">
         <BreadcrumbMenu />
-        {/* <Timeline  /> */}
+        <StaticTimeline steps={steps} />
         <MetaData />
         <GeneralInformation />
         <DesignDocuments />
@@ -42,10 +59,8 @@ const BreadcrumbMenu = () => {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink>
-            <Link href="/dashboard/message">
-              <p>Message</p>
-            </Link>
+          <BreadcrumbLink href="/dashboard/message">
+            <p>Message</p>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />

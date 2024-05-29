@@ -50,8 +50,31 @@ import { useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { FromToTime } from "@/components/fromToTime";
-import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
 import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  timezoneToDDMMYYYY,
+  timezoneToYYYYMMDD,
+} from "@/config/common/timeFunctions";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import {
+  createNewMeeting,
   postInvoice,
   updateInvoiceReceivedStatus,
 } from "../manager/projectManager";
@@ -322,6 +345,7 @@ const meetingData = [
 ];
 
 const MeetingList = () => {
+  const [scheduleSelected, setScheduleSelected] = useState<number>();
   return (
     <div className="mt-6 rounded-md bg-white p-4">
       {/* <h3 className="text-lg font-semibold">Project Details</h3> */}
@@ -524,7 +548,7 @@ interface IAdditionalInvoice {
 
 const ProjectInvoices: React.FC<IAdditionalInvoice> = ({ id }) => {
   const { data: invoiceDatas, mutate } = useAxiosSWR<IInvoice>(
-    apiRoutes.PROTECTED.PROJECTS.INVOICE.LIST(13)({
+    apiRoutes.PROTECTED.PROJECTS.INVOICE.LIST(id)({
       limit: 10,
       expand: "file",
     }),
@@ -535,7 +559,6 @@ const ProjectInvoices: React.FC<IAdditionalInvoice> = ({ id }) => {
     });
     mutate();
   };
-  console.log("INvoice are: ", invoiceDatas);
   return (
     <div className="mt-6 rounded-md bg-white p-4">
       <h3 className="text-lg font-semibold">Invoice</h3>
@@ -943,10 +966,38 @@ const OrderCompleteDialog = () => {
   );
 };
 
+const NewMeetingFormSchema = z.object({
+  meeting_obj_notes: z.string(),
+  type: z.string().transform((val) => Number(val)),
+  // meeting_date_at: z.string(),
+  // slot: z.number(),
+});
+
 const NewMeetingDialog = () => {
-  const [date, setDate] = useState<Date | undefined>(new Date());
+  const [scheduleSelected, setScheduleSelected] = useState<number>(0);
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    new Date(),
+  );
   const newMeetingHandler = () => {
-    console.log("Meeting Dialog Updated");
+    console.log("Meeting Dialog Updated", scheduleSelected, selectedDate);
+  };
+  const form = useForm<z.infer<typeof NewMeetingFormSchema>>({
+    resolver: zodResolver(NewMeetingFormSchema),
+  });
+  const onSubmit = async (data: z.infer<typeof NewMeetingFormSchema>) => {
+    const payload = {
+      ...data,
+      meeting_date_at: timezoneToYYYYMMDD(selectedDate?.toString() ?? ""),
+      slot: scheduleSelected,
+    };
+    if (payload.slot === 0) {
+      toast.error("Please select a schedule");
+    } else if (payload.meeting_date_at === undefined) {
+      toast.error("Please select a date");
+    } else {
+      console.log(payload);
+      await createNewMeeting(1, payload);
+    }
   };
   return (
     <Dialog>
@@ -971,37 +1022,73 @@ const NewMeetingDialog = () => {
         <div className="flex items-center justify-center space-x-2">
           <div className="w-full">
             <p className="font-semibold">Select date</p>
-            <DatePicker />
+            <DatePicker
+              selected={selectedDate}
+              setSelected={setSelectedDate}
+              scheduleSelected={scheduleSelected}
+              setScheduleSelected={setScheduleSelected}
+            />
             <div className="w-full">
-              <Label htmlFor="subject" className="">
-                Subject of meeting notes
-              </Label>
-              <Input
-                type="text"
-                id="subject"
-                placeholder="Subject"
-                className="mb-6 mt-2 border-black py-6"
-              />
-              <Label htmlFor="note" className="">
-                Meeting note details
-              </Label>
-              <Textarea
-                id="note"
-                placeholder="Type your message here."
-                className="mt-2 border-black"
-              />
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)}>
+                  <div className="mb-4">
+                    <FormField
+                      control={form.control}
+                      name="type"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Meeting Type</FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            // defaultValue={field.value.toString()}
+                          >
+                            <FormControl>
+                              <SelectTrigger className="w-full border-black bg-transparent">
+                                <SelectValue placeholder="Select Design Type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value={"0"}>Online</SelectItem>
+                              <SelectItem value={"1"}>Offline</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <FormField
+                      control={form.control}
+                      name="meeting_obj_notes"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Description about the project</FormLabel>
+                          <FormControl>
+                            <Textarea
+                              placeholder="Description"
+                              {...field}
+                              className="border-2 border-black bg-transparent"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    className="w-full py-8 text-lg font-semibold"
+                    // onClick={newMeetingHandler}
+                  >
+                    Send
+                  </Button>
+                </form>
+              </Form>
             </div>
           </div>
         </div>
-        <DialogFooter className="sm:justify-center">
-          <Button
-            type="button"
-            className="w-full py-8 text-lg font-semibold"
-            onClick={newMeetingHandler}
-          >
-            Send
-          </Button>
-        </DialogFooter>
+        <DialogFooter className="sm:justify-center"></DialogFooter>
       </DialogContent>
     </Dialog>
   );

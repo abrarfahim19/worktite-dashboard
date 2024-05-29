@@ -37,23 +37,34 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  IMAGE,
-  PROJECT_CATEGORY_TYPE,
-  PROJECT_DESIGN_TYPE,
-  PROJECT_PRICING_TYPE,
-  PROJECT_TYPE,
-} from "@/config/common";
+import { apiRoutes, IMAGE, IUploadedProject } from "@/config/common";
+import useDataFetch from "@/hooks/useDataFetch";
 import { Icons } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { X } from "lucide-react";
-import React, { useState } from "react";
+import { useEffect, useState } from "react";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import { z } from "zod";
-import { uploadNewProject } from "../manager/manager";
 
-const Page = () => {
+const Page = ({
+  params,
+}: {
+  params: {
+    slug: string;
+  };
+}) => {
+  const { data: projectData } = useDataFetch<IUploadedProject>(
+    apiRoutes.PROTECTED.PUBLISH_PROJECT.GET(params.slug)({ expand: "images" }),
+  );
+  console.log("Data is: ", projectData);
   const [uploadResponses, setUploadResponses] = useState<IMAGE[]>([]);
+  const pageData = params.slug;
+  console.log("Page Data", pageData);
+  useEffect(() => {
+    if (projectData) {
+      setUploadResponses(projectData.images);
+    }
+  }, [projectData]);
   return (
     <div className="p-4">
       <BreadcrumbMenu />
@@ -61,7 +72,10 @@ const Page = () => {
         uploadResponses={uploadResponses}
         setUploadResponses={setUploadResponses}
       />
-      <ProjectDetails uploadResponses={uploadResponses} />
+      <ProjectDetails
+        projectData={projectData}
+        uploadResponses={uploadResponses}
+      />
     </div>
   );
 };
@@ -80,7 +94,7 @@ const BreadcrumbMenu = () => {
         <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbPage className="font-semibold">
-            Upload New Project
+            Update Project Details
           </BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>
@@ -97,6 +111,7 @@ const UploadImage: React.FC<UploadImageProps> = ({
   uploadResponses,
   setUploadResponses,
 }) => {
+  console.log("This is the already uploaded image:", uploadResponses);
   return (
     <div className="mt-4">
       <p className="mb-4 font-bold">Upload Image</p>
@@ -120,12 +135,10 @@ const FormSchema = z.object({
     .min(1, { message: "Value should be at least 1 character long" }),
   pricing_type: z
     .string()
-    .min(1, { message: "Please select one" })
-    .transform((val) => Number(val)),
+    .min(1, { message: "Value should be at least 1 character long" }),
   design_type: z
     .string()
-    .min(1, { message: "Please select one" })
-    .transform((val) => Number(val)),
+    .min(1, { message: "Value should be at least 1 character long" }),
   price: z
     .string()
     .min(1, { message: "Value should be at least 1 character long" }),
@@ -137,12 +150,10 @@ const FormSchema = z.object({
     .min(1, { message: "Value should be at least 1 character long" }),
   category: z
     .string()
-    .min(1, { message: "Please select one" })
-    .transform((val) => Number(val)),
+    .min(1, { message: "Value should be at least 1 character long" }),
   project_type: z
     .string()
-    .min(1, { message: "Please select one" })
-    .transform((val) => Number(val)),
+    .min(1, { message: "Value should be at least 1 character long" }),
   description: z
     .string()
     .min(1, { message: "Value should be at least 1 character long" }),
@@ -152,21 +163,26 @@ const FormSchema = z.object({
 });
 
 interface ProjectDetailsProps {
+  projectData?: IUploadedProject;
   uploadResponses: IMAGE[];
 }
 
-const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
+const ProjectDetails: React.FC<ProjectDetailsProps> = ({
+  projectData,
+  uploadResponses,
+}) => {
+  console.log("Project Data: ", projectData);
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       title: "",
-      // pricing_type: PROJECT_PRICING_TYPE.HOURLY_BASIS,
-      // design_type: PROJECT_DESIGN_TYPE.GLOSSY,
+      pricing_type: "",
+      design_type: "",
       price: "",
       duration: "",
       quantity: "",
-      // category: PROJECT_CATEGORY_TYPE.CHAIR,
-      // project_type: PROJECT_TYPE.SIMPLE,
+      category: "",
+      project_type: "",
       description: "",
       extra_fields: {},
     },
@@ -209,7 +225,6 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
     //   images,
     // };
     // console.log("Upload project data: ", payload);
-    await uploadNewProject(payload);
   };
   return (
     <FormProvider {...form}>
@@ -244,47 +259,13 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
               <div className="col-span-1 w-full">
                 <FormField
                   control={form.control}
-                  name="project_type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Project Type</FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        // defaultValue={field.value.toString()}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="w-full border-2 border-black bg-transparent">
-                            <SelectValue placeholder="Project Type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value={PROJECT_TYPE.SIMPLE.toString()}>
-                            Simple
-                          </SelectItem>
-                          <SelectItem value={PROJECT_TYPE.COMPLEX.toString()}>
-                            Complex
-                          </SelectItem>
-                          <SelectItem value={PROJECT_TYPE.ANY.toString()}>
-                            Complex
-                          </SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className="" />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="col-span-1 w-full">
-                <FormField
-                  control={form.control}
                   name="pricing_type"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Pricing Type</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        // defaultValue={field.value.toString()}
+                        defaultValue={field.value.toString()}
                       >
                         <FormControl>
                           <SelectTrigger className="w-full border-2 border-black bg-transparent">
@@ -292,21 +273,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem
-                            value={PROJECT_PRICING_TYPE.HOURLY_BASIS.toString()}
-                          >
-                            Hourly Basis
-                          </SelectItem>
-                          <SelectItem
-                            value={PROJECT_PRICING_TYPE.ONE_TIME_BASIS.toString()}
-                          >
-                            One Time Basiis
-                          </SelectItem>
-                          <SelectItem
-                            value={PROJECT_PRICING_TYPE.MILESTONE_BASIS.toString()}
-                          >
-                            Milestone Basis
-                          </SelectItem>
+                          <SelectItem value="1">Hourly</SelectItem>
+                          <SelectItem value="2">Monthly</SelectItem>
+                          <SelectItem value="3">Project Based</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage className="" />
@@ -324,7 +293,7 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
                       <FormLabel>Design Type</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        // defaultValue={field.value.toString()}
+                        defaultValue={field.value.toString()}
                       >
                         <FormControl>
                           <SelectTrigger className="w-full border-2 border-black bg-transparent">
@@ -332,16 +301,8 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem
-                            value={PROJECT_DESIGN_TYPE.MATERIAL.toString()}
-                          >
-                            Material
-                          </SelectItem>
-                          <SelectItem
-                            value={PROJECT_DESIGN_TYPE.GLOSSY.toString()}
-                          >
-                            Complex
-                          </SelectItem>
+                          <SelectItem value="1">Simple</SelectItem>
+                          <SelectItem value="2">Complex</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -413,13 +374,40 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
               <div className="col-span-1 w-full">
                 <FormField
                   control={form.control}
+                  name="project_type"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Project Type</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value.toString()}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="w-full border-2 border-black bg-transparent">
+                            <SelectValue placeholder="Project Type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="1">ABCD</SelectItem>
+                          <SelectItem value="2">EFGH</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage className="" />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="col-span-1 w-full">
+                <FormField
+                  control={form.control}
                   name="category"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Category</FormLabel>
                       <Select
                         onValueChange={field.onChange}
-                        // defaultValue={field.value.toString()}
+                        defaultValue={field.value.toString()}
                       >
                         <FormControl>
                           <SelectTrigger className="w-full border-2 border-black bg-transparent">
@@ -427,21 +415,9 @@ const ProjectDetails: React.FC<ProjectDetailsProps> = ({ uploadResponses }) => {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem
-                            value={PROJECT_CATEGORY_TYPE.CHAIR.toString()}
-                          >
-                            Chair
-                          </SelectItem>
-                          <SelectItem
-                            value={PROJECT_CATEGORY_TYPE.DESK.toString()}
-                          >
-                            Desk
-                          </SelectItem>
-                          <SelectItem
-                            value={PROJECT_CATEGORY_TYPE.TABLE.toString()}
-                          >
-                            Bookself
-                          </SelectItem>
+                          <SelectItem value="1">Table</SelectItem>
+                          <SelectItem value="2">Chair</SelectItem>
+                          <SelectItem value="3">Bookself</SelectItem>
                         </SelectContent>
                       </Select>
                       <FormMessage className="" />
@@ -547,13 +523,6 @@ const AddFieldDialogue: React.FC<AddFieldDialogueProps> = () => {
     form.reset(); // Clear the form
   }
 
-  const stopPropagate = (callback: () => void) => {
-    return (e: { stopPropagation: () => void }) => {
-      e.stopPropagation();
-      callback();
-    };
-  };
-
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -575,7 +544,7 @@ const AddFieldDialogue: React.FC<AddFieldDialogueProps> = () => {
         </DialogHeader>
 
         <Form {...form}>
-          <form onSubmit={stopPropagate(form.handleSubmit(onSubmit))}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               control={form.control}
               name="label"
@@ -593,7 +562,6 @@ const AddFieldDialogue: React.FC<AddFieldDialogueProps> = () => {
             <DialogFooter className="sm:justify-center">
               <DialogClose className="my-4 w-full">
                 <Button
-                  // onClick={form.handleSubmit(onSubmit)}
                   type="submit"
                   className="w-full py-8 text-lg font-semibold"
                 >

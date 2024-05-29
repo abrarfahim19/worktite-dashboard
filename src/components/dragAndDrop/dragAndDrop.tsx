@@ -3,6 +3,7 @@ import { apiDelete, apiPost, apiRoutes } from "@/config/common";
 import { Icons } from "@/lib/utils";
 import Image from "next/image";
 import { useDropzone } from "react-dropzone";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 
 interface ImageResponse {
@@ -59,10 +60,15 @@ export const DragAndDrop: React.FC<UploadImageProps> = ({
           response.data,
         ]);
       } catch (error) {
-        console.error("Error uploading file:", error);
+        console.log("Error message", error);
+        toast.error((error as Error).message || "Error uploading file", {
+          position: "top-right",
+        });
       }
     } else {
-      console.log("No files to upload");
+      toast.error("No files to upload", {
+        position: "top-right",
+      });
     }
   };
   const imageDeleteHandler = async (id: number) => {

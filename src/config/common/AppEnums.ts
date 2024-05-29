@@ -41,3 +41,25 @@ export enum INVOICE_FILE_TYPE {
   PDF = 1,
   DOC = 2,
 }
+
+export enum PROJECT_PRICING_TYPE {
+  HOURLY_BASIS = 1,
+  ONE_TIME_BASIS = 2,
+  MILESTONE_BASIS = 3,
+}
+
+export enum PROJECT_DESIGN_TYPE {
+  MATERIAL = 1,
+  GLOSSY = 2,
+}
+
+export enum PROJECT_CATEGORY_TYPE {
+  TABLE = 1,
+  CHAIR = 2,
+  DESK = 3,
+}
+
+export enum MEETING_TYPE {
+  ONLINE = 0,
+  OFFLINE = 1,
+}

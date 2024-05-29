@@ -127,3 +127,15 @@ export const updateInvoiceReceivedStatus = async (
     console.error("Error updating invoice read status:", error);
   }
 };
+
+export const createNewMeeting = async (id: number | string, payload: any) => {
+  try {
+    const response = await apiPost(
+      apiRoutes.PROTECTED.PROJECTS.MEETING.POST(id),
+      payload,
+    );
+    console.log("Meeting created successfully:", response.data);
+  } catch (error) {
+    console.error("Error creating meeting:", error);
+  }
+};
