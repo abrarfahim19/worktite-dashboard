@@ -1,3 +1,5 @@
+"use client";
+
 import { BarChartWithData } from "@/components/barChart";
 import { PieChartWithData } from "@/components/pieChart";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -10,13 +12,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Icons } from "@/lib/utils";
-import { format, formatDistanceToNow } from "date-fns";
+import {
+  apiRoutes,
+  PLACE_HOLDER_IMAGE,
+  ProjectData,
+  STATUS,
+} from "@/config/common";
+import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
+import { useAxiosSWR } from "@/hooks/useAxiosSwr";
+import { Icons, truncateText } from "@/lib/utils";
+import { formatDistanceToNow } from "date-fns";
 import Image from "next/image";
 
 const Page = () => {
   return (
-    <div className="grid w-full grid-cols-12 grid-rows-2 gap-4 p-4">
+    <div className="grid w-full grid-cols-12 gap-x-4 gap-y-4 p-4">
       <div className="col-span-8 row-span-1 rounded-md bg-white">
         <BarChartSection />
       </div>
@@ -41,7 +51,7 @@ const BarChartSection = () => {
       <div className="flex flex-row items-center justify-between p-4">
         <h1 className="text-xl font-semibold">Overview of the project</h1>
       </div>
-      <div className="h-64 w-full">
+      <div className="w-full">
         <BarChartWithData />
       </div>
     </div>
@@ -173,58 +183,15 @@ const MessageBox = ({
   );
 };
 
-const currentlyActiveProjects = [
-  {
-    name: "Chesterfield Table",
-    projectImage:
-      "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    category: "Kitchen table",
-    accountNo: "#436",
-    client: "Jane Cooper",
-    pricing: 15,
-    pricingType: "Hourly",
-    projectStartingDate: 1710838113,
-    noOfProjects: 3,
-    status: "Active",
-    projectID: "PRJ001",
-    messageLink: "https://www.facebook.com",
-    timer: 189490,
-  },
-  {
-    name: "Vesterfield Table",
-    projectImage:
-      "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    category: "Dinner table",
-    accountNo: "#436",
-    client: "Jane Cooper",
-    pricing: 15,
-    pricingType: "Hourly",
-    projectStartingDate: 1710838113,
-    noOfProjects: 3,
-    status: "Active",
-    projectID: "PRJ001",
-    messageLink: "https://www.facebook.com",
-    timer: 189490,
-  },
-  {
-    name: "Vesterfield Table",
-    projectImage:
-      "https://images.pexels.com/photos/3952048/pexels-photo-3952048.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1",
-    category: "Dinner table",
-    accountNo: "#436",
-    client: "Jane Cooper",
-    pricing: 15,
-    pricingType: "Hourly",
-    projectStartingDate: 1710838113,
-    noOfProjects: 3,
-    status: "Active",
-    projectID: "PRJ001",
-    messageLink: "https://www.facebook.com",
-    timer: 189490,
-  },
-];
-
 const ProjectDetails = () => {
+  const { data: activeProjects } = useAxiosSWR<ProjectData>(
+    apiRoutes.PROTECTED.PROJECTS.LIST({
+      limit: 4,
+      status: STATUS.ACTIVE,
+      expand: "image",
+    }),
+  );
+  console.log("Active Projects", activeProjects);
   return (
     <div className="rounded-md bg-white px-4">
       <Table className="">
@@ -248,16 +215,9 @@ const ProjectDetails = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {currentlyActiveProjects.map((item) => {
-            const timestamp = item.timer;
-            const days = Math.floor(timestamp / (24 * 60 * 60));
-            const hours = Math.floor((timestamp % (24 * 60 * 60)) / (60 * 60));
-            const minutes = Math.floor((timestamp % (60 * 60)) / 60);
-            const seconds = timestamp % 60;
-
-            const duration = `${days}d-${hours}h-${minutes}m-${seconds}s`;
+          {activeProjects.map((item) => {
             return (
-              <TableRow key={item.accountNo}>
+              <TableRow key={item.id}>
                 <TableCell className="text-center font-medium">
                   <div className="flex gap-2">
                     <div className="relative h-10 w-10 rounded-md">
@@ -265,27 +225,28 @@ const ProjectDetails = () => {
                         layout="fill"
                         objectFit="cover"
                         quality={100}
-                        src={item.projectImage}
+                        src={
+                          item?.image?.image
+                            ? item.image.image
+                            : PLACE_HOLDER_IMAGE
+                        }
                         alt="project image"
                       />
                     </div>
                     <div className="flex flex-col items-start justify-center">
-                      <p className="font-bold">{item.name}</p>
-                      <p>Pricing Type: {item.pricingType}</p>
+                      <p className="font-bold">
+                        {truncateText(item.title, 15)}
+                      </p>
+                      <p>Pricing: {item.pricing_type}</p>
                     </div>
                   </div>
                 </TableCell>
                 <TableCell className="text-center">{item.category}</TableCell>
                 <TableCell className="text-center">
-                  <p>
-                    {format(
-                      new Date(item.projectStartingDate * 1000),
-                      "dd-MM-yy",
-                    )}
-                  </p>
+                  <p>{timezoneToDDMMYYYY(item.started_at)}</p>
                 </TableCell>
                 <TableCell className="text-center">
-                  <p>{duration}</p>
+                  <p>{item.durations}</p>
                 </TableCell>
                 <TableCell className="text-center">
                   <p>{item.status}</p>

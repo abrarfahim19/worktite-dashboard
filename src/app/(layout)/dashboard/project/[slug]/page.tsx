@@ -38,6 +38,7 @@ import {
   apiRoutes,
   getTimeFromDate,
   IInvoice,
+  IMeetingData,
   second2DHMS,
 } from "@/config/common";
 import { useAxiosSWR } from "@/hooks/useAxiosSwr";
@@ -46,7 +47,7 @@ import { Icons } from "@/lib/utils";
 import { format, formatDuration, intervalToDuration } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 
 import { FromToTime } from "@/components/fromToTime";
@@ -108,9 +109,9 @@ const Page = ({
   const { data } = useDataFetch<IProject>(
     apiRoutes.PROTECTED.PROJECTS.GET(params.slug),
   );
-  useEffect(() => {
-    console.log("data", data);
-  }, [data]);
+  // useEffect(() => {
+  //   console.log("data", data);
+  // }, [data]);
   return (
     <div className="px-4">
       <BreadcrumbMenu />
@@ -136,10 +137,8 @@ const BreadcrumbMenu = () => {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink>
-            <Link href="/dashboard/project">
-              <p>Active Project</p>
-            </Link>
+          <BreadcrumbLink href="/dashboard/project">
+            <p>Active Project</p>
           </BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
@@ -317,35 +316,39 @@ const TotalWorkingHours = ({ projectId }: { projectId: string }) => {
   );
 };
 
-const meetingData = [
-  {
-    date: 1711159239,
-    messageLink: "https://www.facebook.com",
-    meetingNoteLink: "https://www.facebook.com",
-    meetingType: "Online",
-    status: "Pending",
-    meetingLink: "https://www.facebook.com",
-  },
-  {
-    date: 1711159239,
-    messageLink: "https://www.facebook.com",
-    meetingNoteLink: "https://www.facebook.com",
-    meetingType: "Online",
-    status: "Complete",
-    meetingLink: "https://www.facebook.com",
-  },
-  {
-    date: 1711159239,
-    messageLink: "https://www.facebook.com",
-    meetingNoteLink: "https://www.facebook.com",
-    meetingType: "Online",
-    status: "Complete",
-    meetingLink: "https://www.facebook.com",
-  },
-];
+// const meetingData = [
+//   {
+//     date: 1711159239,
+//     messageLink: "https://www.facebook.com",
+//     meetingNoteLink: "https://www.facebook.com",
+//     meetingType: "Online",
+//     status: "Pending",
+//     meetingLink: "https://www.facebook.com",
+//   },
+//   {
+//     date: 1711159239,
+//     messageLink: "https://www.facebook.com",
+//     meetingNoteLink: "https://www.facebook.com",
+//     meetingType: "Online",
+//     status: "Complete",
+//     meetingLink: "https://www.facebook.com",
+//   },
+//   {
+//     date: 1711159239,
+//     messageLink: "https://www.facebook.com",
+//     meetingNoteLink: "https://www.facebook.com",
+//     meetingType: "Online",
+//     status: "Complete",
+//     meetingLink: "https://www.facebook.com",
+//   },
+// ];
 
 const MeetingList = () => {
   const [scheduleSelected, setScheduleSelected] = useState<number>();
+  const { data: meetingData } = useAxiosSWR<IMeetingData>(
+    apiRoutes.PROTECTED.PROJECTS.MEETING.LIST(1)({ limit: 10, expand: "slot" }),
+  );
+  console.log("Meeting Data: ", meetingData);
   return (
     <div className="mt-6 rounded-md bg-white p-4">
       {/* <h3 className="text-lg font-semibold">Project Details</h3> */}
@@ -375,11 +378,13 @@ const MeetingList = () => {
         </TableHeader>
         <TableBody>
           {meetingData.map((item) => (
-            <TableRow key={item.date}>
+            <TableRow key={item.id}>
               <TableCell className="text-center font-medium">
                 <div className="">
                   <p>
-                    {format(new Date(item.date * 1000), "do MMM, 'at' h:mm a")}
+                    {/* {format(new Date(item.slot.created_at * 1000), "do MMM, 'at' h:mm a")} */}
+                    {item.slot.start_at} on{" "}
+                    {timezoneToDDMMYYYY(item.slot.created_at)}
                   </p>
                 </div>
               </TableCell>
@@ -392,7 +397,7 @@ const MeetingList = () => {
                 <MeetingNoteDialog />
               </TableCell>
               <TableCell className="text-center">
-                <p>{item.meetingType}</p>
+                <p>{item.type}</p>
               </TableCell>
               <TableCell className="text-center">
                 <p>{item.status}</p>
@@ -401,10 +406,14 @@ const MeetingList = () => {
                 {item.status === "Pending" ? (
                   <div className="flex justify-between">
                     <Button className="w-32 py-8 text-xl">
-                      <Link href={item.meetingLink}>Start</Link>
+                      <Link href={item.meeting_link ? item.meeting_link : ""}>
+                        Start
+                      </Link>
                     </Button>
                     <Button className="w-32 py-8 text-xl" variant={"secondary"}>
-                      <Link href={item.meetingLink}>Finish</Link>
+                      {/* <Link href={item.meetingLink}> */}
+                      Finish
+                      {/* </Link> */}
                     </Button>
                   </div>
                 ) : (

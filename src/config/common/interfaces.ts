@@ -88,3 +88,64 @@ export interface ITimeSlot {
   end_at: string;
   created_by: number;
 }
+
+export interface ClientStatus {
+  id: number | string;
+  title: string;
+  is_active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Category {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  title: string;
+  created_by: number;
+  images: any;
+}
+
+export interface ProjectData {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  created_by: number;
+  is_active: boolean;
+  started_at: string;
+  ended_at: string;
+  status: string;
+  title: string;
+  description: string;
+  pricing_type: string;
+  price: string;
+  category: number;
+  client: number;
+  image: IMAGE;
+  durations: number;
+}
+
+interface ISlot {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  start_at: string;
+  end_at: string;
+  created_by: number;
+}
+
+export interface IMeetingData {
+  id: number;
+  status: string;
+  type: string;
+  created_at: string;
+  updated_at: string;
+  meeting_obj_notes: string;
+  meeting_complete_notes: string;
+  meeting_link: string | null;
+  meeting_date_at: string;
+  created_by: number;
+  slot: ISlot;
+  project: number;
+  client: number;
+}

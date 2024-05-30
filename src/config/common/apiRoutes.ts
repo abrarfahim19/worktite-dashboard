@@ -140,7 +140,9 @@ export const apiRoutes = Object.freeze({
       },
       MEETING: {
         LIST: (project_pk: number | string) =>
-          addQueryParams(`/projects/api/v1/protected/${project_pk}/meeting/`),
+          addQueryParams(
+            `/projects/api/v1/protected/projects/${project_pk}/meeting/`,
+          ),
         POST: (project_pk: number | string) =>
           `/projects/api/v1/protected/projects/${project_pk}/meeting/`,
       },

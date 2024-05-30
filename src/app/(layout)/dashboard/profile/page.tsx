@@ -1,14 +1,18 @@
 "use client";
 
+import { useLoader } from "@/components/loader";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   apiRoutes,
   PLACE_HOLDER_COVER_IMAGE,
   PLACE_HOLDER_IMAGE,
+  ProjectData,
 } from "@/config/common";
+import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
+import { useAxiosSWR } from "@/hooks/useAxiosSwr";
 import useDataFetch from "@/hooks/useDataFetch";
-import { Icons } from "@/lib/utils";
+import { Icons, truncateText } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import { IUser } from "../clients/[slug]/page";
@@ -20,7 +24,7 @@ const Page = () => {
         "user_details,user_details.profile_picture,user_details.cover_picture",
     }),
   );
-  console.log("This is the cover photo: ", completeUserData);
+  // console.log("This is the cover photo: ", completeUserData);
   return (
     <div className="px-4">
       <ProfileHeader />
@@ -179,11 +183,20 @@ const SocialMediaIcons = () => {
 };
 
 const AllProjects = () => {
+  const { data: projects, isLoading } = useAxiosSWR<ProjectData>(
+    apiRoutes.PROTECTED.PROJECTS.LIST({
+      limit: 10,
+      // fields: "id,started_at,title,pricing_type,category.title,client.email",
+      expand: "image",
+    }),
+  );
+  useLoader({ isLoading });
+  console.log("first 10 projects: ", projects);
   return (
     <div className="mt-4 rounded-md p-4">
       <p className="mb-3 font-semibold">All Projects</p>
       <div className="grid grid-cols-1 gap-4">
-        {userData.runningProjects.map((project) => {
+        {projects.map((project) => {
           return <ProjectCard key={project.id} {...project} />;
         })}
       </div>
@@ -202,16 +215,15 @@ interface IProject {
   priceType: string;
 }
 
-const ProjectCard: React.FC<IProject> = ({
+const ProjectCard: React.FC<ProjectData> = ({
+  title,
   id,
-  name,
-  price,
-  duration,
-  startDate,
+  started_at,
   status,
-  imageUrl,
-  priceType,
-}: IProject) => {
+  durations,
+  pricing_type,
+  image,
+}: ProjectData) => {
   return (
     <div className="grid w-full grid-cols-4 gap-2 rounded-md bg-white p-4">
       <div className="relative col-span-1 rounded-md">
@@ -219,19 +231,19 @@ const ProjectCard: React.FC<IProject> = ({
           layout="fill"
           // objectFit={"cover"}
           quality={100}
-          src={imageUrl}
+          src={image ? image.image : PLACE_HOLDER_IMAGE}
           alt="project image"
         />
       </div>
       <div className="col-span-2">
-        <p className="font-semibold">Title: {name}</p>
-        <p className="">Price: {priceType}</p>
-        <p className="">Duration: {duration}</p>
-        <p className="">Start date: {duration}</p>
+        <p className="font-semibold">Title: {truncateText(title, 20)}</p>
+        <p className="">Price: {pricing_type}</p>
+        <p className="">Duration: {durations}</p>
+        <p className="">Start date: {timezoneToDDMMYYYY(started_at)}</p>
         <p className="">Project status: {status}</p>
       </div>
       <div className="col-span-1 flex items-end justify-end pb-2">
-        <Link href={"/dashboard/project/1234"}>
+        <Link href={`/dashboard/project/${id}`}>
           <Button
             variant={"link"}
             size={"lg"}
@@ -249,6 +261,14 @@ const RightSection = () => {
   return (
     <div className="mt-56">
       <AllProjects />
+      <Link href="/dashboard/project">
+        <Button
+          className="mb-10 w-full border-brand bg-transparent text-brand"
+          variant={"outline"}
+        >
+          View All Projects
+        </Button>
+      </Link>
     </div>
   );
 };
