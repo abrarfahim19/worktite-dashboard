@@ -146,6 +146,11 @@ export const apiRoutes = Object.freeze({
         POST: (project_pk: number | string) =>
           `/projects/api/v1/protected/projects/${project_pk}/meeting/`,
       },
+      CATEGORY: {
+        LIST: addQueryParams("/projects/api/v1/protected/category/"),
+        GET:(id:string | number)=> addQueryParams(`/projects/api/v1/protected/category/${id}/`),
+        POST: "/projects/api/v1/protected/category/",
+      }
     },
     PUBLISH_PROJECT: {
       LIST: addQueryParams("/projects/api/v1/protected/publish-projects/"),

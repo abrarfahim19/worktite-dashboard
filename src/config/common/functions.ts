@@ -234,3 +234,15 @@ export const storeMessageLocally = (
 
 export const PLACE_HOLDER_COVER_IMAGE =
     "http://147.182.242.250/images/2024/05/23/coversize.png";
+
+export function convertSpaceToUnderscore(str: string): string {
+    return str.trim().replace(/\s+/g, '_');
+}
+
+export function convertUnderscoresToSpaces(str: string): string {
+    // Replace underscores with spaces
+    const spacedString = str.replace(/_+/g, ' ');
+    const words = spacedString.split(' ');
+    const capitalizedWords = words.map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase());
+    return capitalizedWords.join(' ');
+}
