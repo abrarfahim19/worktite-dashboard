@@ -11,12 +11,40 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { PROJECT_PRICING_TYPE } from "@/config/common";
 import { Icons } from "@/lib/utils";
 import { format } from "date-fns";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useDropzone } from "react-dropzone";
+import { FormProvider, useForm, useFormContext } from "react-hook-form";
+import CategoryField from "../../designs/uploadproject/components/CategoryField";
 
 const steps = [
   {
@@ -33,20 +61,31 @@ const steps = [
   },
 ];
 const Page = () => {
+  const searchParams = useSearchParams();
+  console.log("Search Params", searchParams.toString());
+  const form = useForm();
+
+  const onSubmit = (data: any) => {
+    console.log("Form Data", data);
+  };
   return (
     <div>
       <div className="px-4">
         <BreadcrumbMenu />
         <StaticTimeline steps={steps} />
-        <MetaData />
-        <GeneralInformation />
-        <DesignDocuments />
-        <TechnicalDocuments />
-        <ArchiveDocuments />
-        <AddNewField />
-        <InternalNotes />
-        <MeetingNotes />
-        <NextBack />
+        <FormProvider {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)}>
+            <MetaData />
+            <GeneralInformation />
+            <DesignDocuments />
+            <TechnicalDocuments />
+            <ArchiveDocuments />
+            <AddNewField />
+            <InternalNotes />
+            <MeetingNotes />
+            <NextBack />
+          </form>
+        </FormProvider>
       </div>
     </div>
   );
@@ -75,45 +114,90 @@ const BreadcrumbMenu = () => {
 };
 
 const MetaData = () => {
+  const form = useFormContext();
   return (
     <div className="mt-20">
       <div className="flex gap-4">
-        <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            type="text"
-            id="title"
-            className="border-2 border-black bg-transparent"
-            placeholder="Title Name"
+        <div className="gap-15 grid w-full items-center">
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Title</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Title"
+                    {...field}
+                    className="border-2 border-black bg-transparent"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor="title">Categories</Label>
-          <Input
-            type="text"
-            id="categories"
-            className="border-2 border-black bg-transparent"
-            placeholder="Categories"
-          />
+          <CategoryField />
         </div>
       </div>
-      <div className="mt-4 flex gap-4">
+      <div className="mt-2 flex gap-4">
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor="title">Pricing type</Label>
-          <Input
-            type="text"
-            id="title"
-            className="border-2 border-black bg-transparent"
-            placeholder="Title Name"
+          <FormField
+            control={form.control}
+            name="pricing_type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Pricing Type</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  // defaultValue={field.value.toString()}
+                >
+                  <FormControl>
+                    <SelectTrigger className="w-full border-2 border-black bg-transparent">
+                      <SelectValue placeholder="Select Pricing Type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem
+                      value={PROJECT_PRICING_TYPE.HOURLY_BASIS.toString()}
+                    >
+                      Hourly Basis
+                    </SelectItem>
+                    <SelectItem
+                      value={PROJECT_PRICING_TYPE.ONE_TIME_BASIS.toString()}
+                    >
+                      One Time Basiis
+                    </SelectItem>
+                    <SelectItem
+                      value={PROJECT_PRICING_TYPE.MILESTONE_BASIS.toString()}
+                    >
+                      Milestone Basis
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage className="" />
+              </FormItem>
+            )}
           />
         </div>
         <div className="grid w-full items-center gap-1.5">
-          <Label htmlFor="title">Hourly rate</Label>
-          <Input
-            type="text"
-            id="categories"
-            className="border-2 border-black bg-transparent"
-            placeholder="Categories"
+          <FormField
+            control={form.control}
+            name="rate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Rate</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Rate"
+                    {...field}
+                    className="border-2 border-black bg-transparent"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
           />
         </div>
       </div>
@@ -122,12 +206,25 @@ const MetaData = () => {
 };
 
 const GeneralInformation = () => {
+  const form = useFormContext();
   return (
     <div className="mt-4">
-      <Label htmlFor="info">General project information</Label>
-      <Textarea
-        placeholder="Type your message here."
-        className="border-2 border-black bg-transparent"
+      <FormField
+        control={form.control}
+        name="description"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>General project information</FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="Type your project information here..."
+                {...field}
+                className="border-2 border-black bg-transparent"
+              />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
       />
     </div>
   );
@@ -149,11 +246,13 @@ const designDocumentsData = [
     link: "https://www.google.com",
   },
 ];
+
 const DesignDocuments = () => {
   return (
     <div className="mt-4 rounded bg-white p-4">
       <p className="text-base font-bold">Design Documents</p>
-      {designDocumentsData.map((item, index) => {
+
+      {/* {designDocumentsData.map((item, index) => {
         return (
           <div key={item.id} className="mt-2">
             <div className="flex items-center justify-between">
@@ -176,11 +275,8 @@ const DesignDocuments = () => {
             )}
           </div>
         );
-      })}
-      <Button variant={"outline"} className="mt-4 border-brand" size={"lg"}>
-        <Icons.attacthmentBrand className="h-6 w-6" />
-        <p className="text-brand">Attach File</p>
-      </Button>
+      })} */}
+      <DesignDocumentDialog />
     </div>
   );
 };
@@ -440,5 +536,138 @@ const NextBack = () => {
         <p className="border-b-2 border-brand">Back</p>
       </Button>
     </div>
+  );
+};
+
+interface IDesignDocumentDialog {
+  id: string;
+}
+
+const DesignDocumentDialog: React.FC<IDesignDocumentDialog> = ({ id }) => {
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    maxFiles: 1,
+    accept: {
+      "application/pdf": [".pdf", ".doc"],
+    },
+  });
+
+  const files = acceptedFiles.map((file: any) => {
+    const turncated =
+      file.path.length > 10 ? file.path.substring(0, 10) + "..." : file.path;
+    return (
+      <li key={file.path}>
+        {turncated} - {file.size} bytes
+      </li>
+    );
+  });
+
+  const additionalInvoiceHandler = () => {
+    console.log("invoice Completed");
+  };
+
+  const invoiceHandler = async () => {
+    console.log("Start executing!");
+    if (acceptedFiles.length > 0) {
+      const file = acceptedFiles[0];
+      const formData = new FormData();
+      formData.append("file", file);
+      console.log("File Type is following", file.type);
+      let file_type = 2;
+      if (file.type === "application/pdf") {
+        file_type = 1;
+      }
+      const payLoad = {
+        id,
+        formData,
+        file_type,
+      };
+      // await postInvoice(payLoad);
+      // if
+      // await postInvoice(id, formData, );
+      // try {
+      //   const response = await apiPost(
+      //     apiRoutes.FILES.DOCUMENTS.POST,
+      //     formData,
+      //     {
+      //       headers: {
+      //         "Content-Type": "application/pdf",
+      //       },
+      //     },
+      //   );
+      //   console.log("File uploaded successfully:", response.data);
+      // } catch (error) {
+      //   console.error("Error uploading file:", error);
+      // }
+    } else {
+      console.log("No files to upload");
+    }
+  };
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant={"outline"} className="mt-4 border-brand" size={"lg"}>
+          <Icons.attacthmentBrand className="h-6 w-6" />
+          <p className="text-brand">Attach File</p>
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="w-full px-10">
+        <DialogHeader className="">
+          <DialogTitle className="text-center text-lg font-semibold text-black">
+            Upload the design documents here
+          </DialogTitle>
+          <DialogDescription className=""></DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center space-x-2">
+          <div className="w-full">
+            <h5 className="text-md font-semibold">Upload PDF (Optional)</h5>
+            <div className="mt-4 flex gap-4">
+              <div className="w-full items-center justify-center">
+                <div
+                  {...getRootProps({
+                    className:
+                      "h-32 w-full rounded-md border-[1px] border-dashed border-black bg-transparent flex justify-center items-center ",
+                  })}
+                >
+                  <input {...getInputProps()} />
+                  <div className="flex flex-col items-center justify-center gap-2">
+                    <Icons.upload className="h-12 w-12" />
+                    <p className="w-2/3 text-center text-xs">
+                      Drag and drop or click to upload document
+                    </p>
+                  </div>
+                </div>
+                <h4 className="my-2 font-semibold">Files</h4>
+                <ul>{files}</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+        <DialogFooter className="">
+          <div className="flex flex-1 flex-row gap-8">
+            <Button
+              className={`w-44 py-8 text-lg text-white`}
+              onClick={invoiceHandler}
+            >
+              Create Invoice
+            </Button>
+
+            <div>
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant={"link"}
+                  className={`w-full py-8 text-lg font-semibold underline `}
+                  onClick={additionalInvoiceHandler}
+                >
+                  Send
+                </Button>
+                {/* <InvoiceSentDialog /> */}
+              </DialogClose>
+            </div>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };
