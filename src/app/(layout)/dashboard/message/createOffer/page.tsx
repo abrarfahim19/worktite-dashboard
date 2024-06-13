@@ -37,14 +37,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { PROJECT_PRICING_TYPE } from "@/config/common";
-import { Icons } from "@/lib/utils";
+import { IFiles, PROJECT_PRICING_TYPE } from "@/config/common";
+import { Icons, truncateText } from "@/lib/utils";
 import { format } from "date-fns";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import { FormProvider, useForm, useFormContext } from "react-hook-form";
 import CategoryField from "../../designs/uploadproject/components/CategoryField";
+import { documentDelete, uploadDocuments } from "../manager";
 
 const steps = [
   {
@@ -248,24 +250,44 @@ const designDocumentsData = [
 ];
 
 const DesignDocuments = () => {
+  const form = useFormContext();
+  const [designDocumentsList, setDesignDocumentsList] = useState<IFiles[]>([]);
+  useEffect(() => {
+    console.log("This is the design documents list", designDocumentsList);
+  }, [designDocumentsList]);
+  const documentDeleteHandler = async (id: number | string) => {
+    const response = await documentDelete(id);
+    if (response) {
+      setDesignDocumentsList((prevResponses) =>
+        prevResponses.filter((response) => response.id !== id),
+      );
+    }
+  };
   return (
     <div className="mt-4 rounded bg-white p-4">
       <p className="text-base font-bold">Design Documents</p>
 
-      {/* {designDocumentsData.map((item, index) => {
+      {designDocumentsList.map((item, index) => {
         return (
           <div key={item.id} className="mt-2">
             <div className="flex items-center justify-between">
-              <p className="font-semibol font-sm">{item.title}</p>
+              <p className="font-semibol font-sm">
+                {truncateText(item.file_name, 10)}
+              </p>
               <div className="flex">
                 <Icons.attacthment className="h-6 w-6" />
-                <p className="font-semibold">{item.fileName}</p>
+                <p className="font-semibold">
+                  {truncateText(item.file_name, 10)}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Button variant={"ghost"}>
                   <Icons.edit className="h-6 w-6" />
                 </Button>
-                <Button variant={"ghost"}>
+                <Button
+                  variant={"ghost"}
+                  onClick={async () => documentDeleteHandler(item.id)}
+                >
                   <Icons.delete className="h-6 w-6" />
                 </Button>
               </div>
@@ -275,8 +297,8 @@ const DesignDocuments = () => {
             )}
           </div>
         );
-      })} */}
-      <DesignDocumentDialog />
+      })}
+      <DesignDocumentDialog setDesignDocumentsList={setDesignDocumentsList} />
     </div>
   );
 };
@@ -529,9 +551,11 @@ const MeetingNotes = () => {
 const NextBack = () => {
   return (
     <div className="my-8 flex gap-6">
-      <Link href={"createOffer/invoice"}>
-        <Button size={"lg"}>Next</Button>
-      </Link>
+      {/* <Link href={"createOffer/invoice"}> */}
+      <Button type="submit" size={"lg"}>
+        Next
+      </Button>
+      {/* </Link> */}
       <Button variant={"link"} className="">
         <p className="border-b-2 border-brand">Back</p>
       </Button>
@@ -540,17 +564,18 @@ const NextBack = () => {
 };
 
 interface IDesignDocumentDialog {
-  id: string;
+  setDesignDocumentsList: React.Dispatch<React.SetStateAction<IFiles[]>>;
 }
 
-const DesignDocumentDialog: React.FC<IDesignDocumentDialog> = ({ id }) => {
+const DesignDocumentDialog: React.FC<IDesignDocumentDialog> = ({
+  setDesignDocumentsList,
+}) => {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
     maxFiles: 1,
     accept: {
       "application/pdf": [".pdf", ".doc"],
     },
   });
-
   const files = acceptedFiles.map((file: any) => {
     const turncated =
       file.path.length > 10 ? file.path.substring(0, 10) + "..." : file.path;
@@ -577,11 +602,19 @@ const DesignDocumentDialog: React.FC<IDesignDocumentDialog> = ({ id }) => {
         file_type = 1;
       }
       const payLoad = {
-        id,
+        // id,
         formData,
         file_type,
       };
-      // await postInvoice(payLoad);
+      try {
+        const response: any = await uploadDocuments(payLoad);
+        setDesignDocumentsList((prevResponses) => [
+          ...prevResponses,
+          response?.data,
+        ]);
+      } catch (error) {
+        console.error("Error uploading file:", error);
+      }
       // if
       // await postInvoice(id, formData, );
       // try {

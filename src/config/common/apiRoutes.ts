@@ -50,7 +50,7 @@ export const apiRoutes = Object.freeze({
     DOCUMENTS: {
       LIST: addQueryParams("/files/files/"),
       POST: "/files/files/",
-      DELETE: (id: number) => `/files/files/${id}/`,
+      DELETE: (id: number | string) => `/files/files/${id}/`,
     },
   },
   PUBLIC: {
@@ -148,9 +148,10 @@ export const apiRoutes = Object.freeze({
       },
       CATEGORY: {
         LIST: addQueryParams("/projects/api/v1/protected/category/"),
-        GET:(id:string | number)=> addQueryParams(`/projects/api/v1/protected/category/${id}/`),
+        GET: (id: string | number) =>
+          addQueryParams(`/projects/api/v1/protected/category/${id}/`),
         POST: "/projects/api/v1/protected/category/",
-      }
+      },
     },
     PUBLISH_PROJECT: {
       LIST: addQueryParams("/projects/api/v1/protected/publish-projects/"),
