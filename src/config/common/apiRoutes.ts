@@ -104,7 +104,7 @@ export const apiRoutes = Object.freeze({
         GET: (projectPk: string) =>
           `/projects/api/v1/protected/projects/${projectPk}/`,
       },
-      CREATE: "",
+      CREATE: "/projects/api/v1/protected/projects/",
       CLIENT_STATUS: {
         LIST: (projectPk: string | number) =>
           addQueryParams(

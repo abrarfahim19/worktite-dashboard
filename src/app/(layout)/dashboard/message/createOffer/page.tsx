@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { IFiles, PROJECT_PRICING_TYPE } from "@/config/common";
+import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
 import { Icons, truncateText } from "@/lib/utils";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -64,7 +65,7 @@ const steps = [
 ];
 const Page = () => {
   const searchParams = useSearchParams();
-  console.log("Search Params", searchParams.toString());
+  // console.log("Search Params", searchParams.toString());
   const form = useForm();
 
   const onSubmit = (data: any) => {
@@ -84,7 +85,7 @@ const Page = () => {
             <ArchiveDocuments />
             <AddNewField />
             <InternalNotes />
-            <MeetingNotes />
+            {/* <MeetingNotes /> */}
             <NextBack />
           </form>
         </FormProvider>
@@ -232,23 +233,6 @@ const GeneralInformation = () => {
   );
 };
 
-const designDocumentsData = [
-  {
-    title: "Design Document 1",
-    id: 1,
-    description: "This is the first design document",
-    fileName: "BOM.pdf",
-    link: "https://www.google.com",
-  },
-  {
-    id: 2,
-    title: "Design Document 2",
-    description: "This is the second design document",
-    fileName: "BOM.pdf",
-    link: "https://www.google.com",
-  },
-];
-
 const DesignDocuments = () => {
   const form = useFormContext();
   const [designDocumentsList, setDesignDocumentsList] = useState<IFiles[]>([]);
@@ -263,6 +247,8 @@ const DesignDocuments = () => {
       );
     }
   };
+
+  form.setValue("design_file", designDocumentsList || null);
   return (
     <div className="mt-4 rounded bg-white p-4">
       <p className="text-base font-bold">Design Documents</p>
@@ -292,117 +278,129 @@ const DesignDocuments = () => {
                 </Button>
               </div>
             </div>
-            {index !== designDocumentsData.length - 1 && (
+            {index !== designDocumentsList.length - 1 && (
               <hr className="mt-3" />
             )}
           </div>
         );
       })}
-      <DesignDocumentDialog setDesignDocumentsList={setDesignDocumentsList} />
+      <DocumentDialog setDesignDocumentsList={setDesignDocumentsList} />
     </div>
   );
 };
 
-const technicalDocumentsData = [
-  {
-    title: "Technical Document 1",
-    id: 1,
-    description: "This is the first design document",
-    fileName: "BOM.pdf",
-    link: "https://www.google.com",
-  },
-  {
-    id: 2,
-    title: "Tecnical Document 2",
-    description: "This is the second design document",
-    fileName: "BOM.pdf",
-    link: "https://www.google.com",
-  },
-];
 const TechnicalDocuments = () => {
+  const form = useFormContext();
+  const [technicalDocumentsList, setTechnicalDocumentsList] = useState<
+    IFiles[]
+  >([]);
+  useEffect(() => {
+    console.log("This is the technical documents list", technicalDocumentsList);
+  }, [technicalDocumentsList]);
+  const documentDeleteHandler = async (id: number | string) => {
+    const response = await documentDelete(id);
+    if (response) {
+      setTechnicalDocumentsList((prevResponses) =>
+        prevResponses.filter((response) => response.id !== id),
+      );
+    }
+  };
+
+  form.setValue("technical_file", technicalDocumentsList || null);
   return (
     <div className="mt-4 rounded bg-white p-4">
-      <p className="text-base font-bold">Technincal Documents</p>
-      {technicalDocumentsData.map((item, index) => {
+      <p className="text-base font-bold">Technical Documents</p>
+
+      {technicalDocumentsList.map((item, index) => {
         return (
           <div key={item.id} className="mt-2">
             <div className="flex items-center justify-between">
-              <p className="font-semibol font-sm">{item.title}</p>
+              <p className="font-semibol font-sm">
+                {truncateText(item.file_name, 10)}
+              </p>
               <div className="flex">
                 <Icons.attacthment className="h-6 w-6" />
-                <p className="font-semibold">{item.fileName}</p>
+                <p className="font-semibold">
+                  {truncateText(item.file_name, 10)}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Button variant={"ghost"}>
                   <Icons.edit className="h-6 w-6" />
                 </Button>
-                <Button variant={"ghost"}>
+                <Button
+                  variant={"ghost"}
+                  onClick={async () => documentDeleteHandler(item.id)}
+                >
                   <Icons.delete className="h-6 w-6" />
                 </Button>
               </div>
             </div>
-            {index !== designDocumentsData.length - 1 && (
+            {index !== technicalDocumentsList.length - 1 && (
               <hr className="mt-3" />
             )}
           </div>
         );
       })}
-      <Button variant={"outline"} className="mt-4 border-brand" size={"lg"}>
-        <Icons.attacthmentBrand className="h-6 w-6" />
-        <p className="text-brand">Attach File</p>
-      </Button>
+      <DocumentDialog setDesignDocumentsList={setTechnicalDocumentsList} />
     </div>
   );
 };
 
-const archiveDocumentsData = [
-  {
-    title: "Archive Document 1",
-    id: 1,
-    description: "This is the first design document",
-    fileName: "BOM.pdf",
-    link: "https://www.google.com",
-  },
-  {
-    id: 2,
-    title: "Archive Document 2",
-    description: "This is the second design document",
-    fileName: "BOM.pdf",
-    link: "https://www.google.com",
-  },
-];
 const ArchiveDocuments = () => {
+  const form = useFormContext();
+  const [archiveDocumentsList, setArchiveDocumentsList] = useState<IFiles[]>(
+    [],
+  );
+  useEffect(() => {
+    console.log("This is the archive documents list", archiveDocumentsList);
+  }, [archiveDocumentsList]);
+  const documentDeleteHandler = async (id: number | string) => {
+    const response = await documentDelete(id);
+    if (response) {
+      setArchiveDocumentsList((prevResponses) =>
+        prevResponses.filter((response) => response.id !== id),
+      );
+    }
+  };
+
+  form.setValue("archive_file", archiveDocumentsList || null);
   return (
     <div className="mt-4 rounded bg-white p-4">
       <p className="text-base font-bold">Archive Documents</p>
-      {archiveDocumentsData.map((item, index) => {
+
+      {archiveDocumentsList.map((item, index) => {
         return (
           <div key={item.id} className="mt-2">
             <div className="flex items-center justify-between">
-              <p className="font-semibol font-sm">{item.title}</p>
+              <p className="font-semibol font-sm">
+                {truncateText(item.file_name, 10)}
+              </p>
               <div className="flex">
                 <Icons.attacthment className="h-6 w-6" />
-                <p className="font-semibold">{item.fileName}</p>
+                <p className="font-semibold">
+                  {truncateText(item.file_name, 10)}
+                </p>
               </div>
               <div className="flex gap-2">
                 <Button variant={"ghost"}>
                   <Icons.edit className="h-6 w-6" />
                 </Button>
-                <Button variant={"ghost"}>
+                <Button
+                  variant={"ghost"}
+                  onClick={async () => documentDeleteHandler(item.id)}
+                >
                   <Icons.delete className="h-6 w-6" />
                 </Button>
               </div>
             </div>
-            {index !== designDocumentsData.length - 1 && (
+            {index !== archiveDocumentsList.length - 1 && (
               <hr className="mt-3" />
             )}
           </div>
         );
       })}
-      <Button variant={"outline"} className="mt-4 border-brand" size={"lg"}>
-        <Icons.attacthmentBrand className="h-6 w-6" />
-        <p className="text-brand">Attach File</p>
-      </Button>
+      <DocumentDialog setDesignDocumentsList={setArchiveDocumentsList} />
     </div>
   );
 };
@@ -439,27 +437,30 @@ const internalNotesData = [
   },
 ];
 
+interface IInternalNotes {
+  id: number;
+  date: string;
+  note: string;
+}
+
 const InternalNotes = () => {
+  const form = useFormContext();
+  const [internalNotesData, setInternalNotesData] = useState<IInternalNotes[]>(
+    [],
+  );
+  form.setValue("internal_notes", internalNotesData || null);
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
         <p className="font-bold">Internal notes</p>
-        <Button
-          variant={"outline"}
-          className="border-brand bg-transparent"
-          size={"lg"}
-        >
-          <Icons.addNote className="h-4 w-4" />
-          <p className="text-brand">Add New</p>
-        </Button>
+        <InternalNotesDialog setInternalNotesData={setInternalNotesData} />
       </div>
       {internalNotesData.map((item, index) => {
-        const formattedDate = format(new Date(item.date * 1000), "dd-MM-yyyy");
         return (
           <div key={item.id} className="mt-4 rounded border-2 border-black p-4">
             {/* <p className="text-base font-bold">{item.title}</p> */}
             <div className="flex justify-between">
-              <p className="mb-4 text-sm">{formattedDate}</p>
+              <p className="mb-4 text-sm">{timezoneToDDMMYYYY(item.date)}</p>
               <Icons.menu className="h-4 w-4" />
             </div>
             <p className="text-sm">{item.note}</p>
@@ -563,11 +564,11 @@ const NextBack = () => {
   );
 };
 
-interface IDesignDocumentDialog {
+interface IDocumentDialog {
   setDesignDocumentsList: React.Dispatch<React.SetStateAction<IFiles[]>>;
 }
 
-const DesignDocumentDialog: React.FC<IDesignDocumentDialog> = ({
+const DocumentDialog: React.FC<IDocumentDialog> = ({
   setDesignDocumentsList,
 }) => {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
@@ -696,6 +697,66 @@ const DesignDocumentDialog: React.FC<IDesignDocumentDialog> = ({
                   Send
                 </Button>
                 {/* <InvoiceSentDialog /> */}
+              </DialogClose>
+            </div>
+          </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface IInternalNotesDialog {
+  setInternalNotesData: React.Dispatch<React.SetStateAction<IInternalNotes[]>>;
+}
+const InternalNotesDialog: React.FC<IInternalNotesDialog> = ({
+  setInternalNotesData,
+}) => {
+  return (
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant={"outline"} className="border-brand" size={"lg"}>
+          <Icons.addNote className="h-6 w-6" />
+          <p className="text-brand">Add New</p>
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="w-full px-10">
+        <DialogHeader className="">
+          <DialogTitle className="text-center text-lg font-semibold text-black">
+            Add New Internal Note
+          </DialogTitle>
+          <DialogDescription className=""></DialogDescription>
+        </DialogHeader>
+        <div className="flex items-center justify-center space-x-2">
+          <div className="w-full">
+            <h5 className="text-md font-semibold">Internal Note</h5>
+            <div className="mt-2 flex gap-4">
+              <Textarea
+                placeholder="Enter your internal note here"
+                className="w-full"
+              />
+            </div>
+          </div>
+        </div>
+        <DialogFooter className="">
+          <div className="flex flex-1 flex-row gap-8">
+            <Button
+              className={`w-44 py-8 text-lg text-white`}
+              onClick={() => console.log("Note Created")}
+            >
+              Create Note
+            </Button>
+
+            <div>
+              <DialogClose asChild>
+                <Button
+                  type="button"
+                  variant={"link"}
+                  className={`w-full py-8 text-lg font-semibold underline `}
+                  onClick={() => console.log("Note Cancelled")}
+                >
+                  Cancel
+                </Button>
               </DialogClose>
             </div>
           </div>

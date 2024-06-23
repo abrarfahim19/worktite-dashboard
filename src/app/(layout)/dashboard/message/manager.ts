@@ -58,3 +58,21 @@ export const documentDelete = async (id: number | string) => {
     });
   }
 };
+
+export const createProject = async (payload: any) => {
+  try {
+    const response = await apiPost(
+      apiRoutes.PROTECTED.PROJECTS.CREATE,
+      payload,
+    );
+    toast.success("Project created successfully", {
+      position: "top-right",
+    });
+    return response;
+  } catch (error) {
+    console.error("Error creating project:", error);
+    toast.error("Something went Wrong", {
+      position: "top-right",
+    });
+  }
+};
