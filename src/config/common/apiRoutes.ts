@@ -152,6 +152,9 @@ export const apiRoutes = Object.freeze({
           addQueryParams(`/projects/api/v1/protected/category/${id}/`),
         POST: "/projects/api/v1/protected/category/",
       },
+      INTERNAL_NOTES: {
+        CREATE: "",
+      },
     },
     PUBLISH_PROJECT: {
       LIST: addQueryParams("/projects/api/v1/protected/publish-projects/"),

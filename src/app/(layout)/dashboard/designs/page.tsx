@@ -93,7 +93,7 @@ const ProjectDetails = () => {
                         objectFit="cover"
                         quality={100}
                         src={
-                          item.images[0].image
+                          item.images[0]?.image
                             ? item.images[0].image
                             : PLACE_HOLDER_IMAGE
                         }

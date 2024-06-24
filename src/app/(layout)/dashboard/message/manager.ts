@@ -76,3 +76,21 @@ export const createProject = async (payload: any) => {
     });
   }
 };
+
+export const createInternalNotes = async (payload: any) => {
+  try {
+    const response = await apiPost(
+      apiRoutes.PROTECTED.PROJECTS.INTERNAL_NOTES.CREATE,
+      payload,
+    );
+    toast.success("Internal Note created successfully", {
+      position: "top-right",
+    });
+    return response;
+  } catch (error) {
+    console.error("Error creating internal note:", error);
+    toast.error("Something went Wrong", {
+      position: "top-right",
+    });
+  }
+};

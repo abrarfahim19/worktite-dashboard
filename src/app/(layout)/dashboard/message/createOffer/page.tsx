@@ -22,6 +22,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  Form,
   FormControl,
   FormField,
   FormItem,
@@ -37,7 +38,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { IFiles, PROJECT_PRICING_TYPE } from "@/config/common";
+import { IFiles, PROJECT_PRICING_TYPE, stopPropagate } from "@/config/common";
 import { timezoneToDDMMYYYY } from "@/config/common/timeFunctions";
 import { Icons, truncateText } from "@/lib/utils";
 import { format } from "date-fns";
@@ -712,6 +713,12 @@ interface IInternalNotesDialog {
 const InternalNotesDialog: React.FC<IInternalNotesDialog> = ({
   setInternalNotesData,
 }) => {
+  const noteForm = useForm();
+  const onSubmit = async (data: any) => {
+    console.log(data);
+    // await createInternalNotes(data);
+  };
+
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -721,46 +728,68 @@ const InternalNotesDialog: React.FC<IInternalNotesDialog> = ({
         </Button>
       </DialogTrigger>
       <DialogContent className="w-full px-10">
-        <DialogHeader className="">
-          <DialogTitle className="text-center text-lg font-semibold text-black">
-            Add New Internal Note
-          </DialogTitle>
-          <DialogDescription className=""></DialogDescription>
-        </DialogHeader>
-        <div className="flex items-center justify-center space-x-2">
-          <div className="w-full">
-            <h5 className="text-md font-semibold">Internal Note</h5>
+        <Form {...noteForm}>
+          <form onSubmit={stopPropagate(noteForm.handleSubmit(onSubmit))}>
+            <DialogHeader className="">
+              <DialogTitle className="text-center text-lg font-semibold text-black">
+                Add New Internal Note
+              </DialogTitle>
+              <DialogDescription className=""></DialogDescription>
+            </DialogHeader>
+            <div className="flex items-center justify-center space-x-2">
+              <div className="w-full">
+                {/* <h5 className="text-md font-semibold">Internal Note</h5>
             <div className="mt-2 flex gap-4">
               <Textarea
                 placeholder="Enter your internal note here"
                 className="w-full"
               />
+            </div> */}
+                <FormField
+                  control={noteForm.control}
+                  name="note"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Internal Notes</FormLabel>
+                      <FormControl>
+                        <Textarea
+                          placeholder="Type your internal notes here..."
+                          {...field}
+                          className="border-2 border-black bg-transparent"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
             </div>
-          </div>
-        </div>
-        <DialogFooter className="">
-          <div className="flex flex-1 flex-row gap-8">
-            <Button
-              className={`w-44 py-8 text-lg text-white`}
-              onClick={() => console.log("Note Created")}
-            >
-              Create Note
-            </Button>
-
-            <div>
-              <DialogClose asChild>
+            <DialogFooter className="">
+              <div className="mt-4 flex flex-1 flex-row gap-8">
                 <Button
-                  type="button"
-                  variant={"link"}
-                  className={`w-full py-8 text-lg font-semibold underline `}
-                  onClick={() => console.log("Note Cancelled")}
+                  type="submit"
+                  className={`w-44 py-8 text-lg text-white`}
+                  // onClick={() => console.log("Note Created")}
                 >
-                  Cancel
+                  Create Note
                 </Button>
-              </DialogClose>
-            </div>
-          </div>
-        </DialogFooter>
+
+                <div>
+                  <DialogClose asChild>
+                    <Button
+                      type="button"
+                      variant={"link"}
+                      className={`w-full py-8 text-lg font-semibold underline `}
+                      // onClick={() => console.log("Note Cancelled")}
+                    >
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                </div>
+              </div>
+            </DialogFooter>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );
