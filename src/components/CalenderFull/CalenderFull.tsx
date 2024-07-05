@@ -1,9 +1,8 @@
 "use client";
 
-import {apiRoutes} from "@/config/common";
-import {useAxiosSWR} from "@/hooks/useAxiosSwr";
-import useDataFetch from "@/hooks/useDataFetch";
-import {cn} from "@/lib/utils";
+import { apiRoutes } from "@/config/common";
+import { useAxiosSWR } from "@/hooks/useAxiosSwr";
+import { cn } from "@/lib/utils";
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import { default as FullCalendar } from "@fullcalendar/react";
@@ -13,7 +12,7 @@ import {
   DayCellContentArg,
   EventContentArg,
 } from "fullcalendar/index.js";
-import {useEffect, useMemo, useRef, useState} from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 const renderDayCellContent: CustomContentGenerator<DayCellContentArg> = (
   dayCellInfo,
@@ -43,19 +42,42 @@ interface CalenderFullProps {
   date: Date;
   setDayEvents: React.Dispatch<React.SetStateAction<IEvent[]>>;
 }
-export const CalendarFull: React.FC<CalenderFullProps> = ({ date , setDayEvents}) => {
-  const monthYearQuery = "".concat(date.getFullYear().toString(), "-",(date.getMonth()+1).toString().padStart(2, '0'))
-  const calendarRef = useRef(null);
-  const {data: appointments} = useAxiosSWR<IEvent>(apiRoutes.PROTECTED.GENERAL.CALENDER.APPOINTMENTS.LIST({month_year: monthYearQuery, limit:30}))
-  const {data: meetings} = useAxiosSWR<IEvent>(apiRoutes.PROTECTED.GENERAL.CALENDER.MEETINGS.LIST({month_year: monthYearQuery, limit:30}))
+export const CalendarFull: React.FC<CalenderFullProps> = ({
+  date,
+  setDayEvents,
+}) => {
+  const monthYearQuery = "".concat(
+    date.getFullYear().toString(),
+    "-",
+    (date.getMonth() + 1).toString().padStart(2, "0"),
+  );
+  const calendarRef = useRef<FullCalendar | null>(null);
+  const { data: appointments } = useAxiosSWR<IEvent>(
+    apiRoutes.PROTECTED.GENERAL.CALENDER.APPOINTMENTS.LIST({
+      month_year: monthYearQuery,
+      limit: 30,
+    }),
+  );
+  const { data: meetings } = useAxiosSWR<IEvent>(
+    apiRoutes.PROTECTED.GENERAL.CALENDER.MEETINGS.LIST({
+      month_year: monthYearQuery,
+      limit: 30,
+    }),
+  );
   const events = useMemo(() => {
     if (!appointments && !meetings) return [];
-    const modifiedAppointments = appointments.map(e => ({ ...e, id: `${e?.id}-${e?.event_type}` }));
-    const modifiedMeetings = meetings.map(e => ({ ...e, id: `${e?.id}-${e?.event_type}` }));
+    const modifiedAppointments = appointments.map((e) => ({
+      ...e,
+      id: `${e?.id}-${e?.event_type}`,
+    }));
+    const modifiedMeetings = meetings.map((e) => ({
+      ...e,
+      id: `${e?.id}-${e?.event_type}`,
+    }));
     return [...modifiedAppointments, ...modifiedMeetings];
   }, [appointments, meetings]);
 
-  console.log("appointments", appointments, meetings, events.length)
+  console.log("appointments", appointments, meetings, events.length);
   function goToPerticularDate() {
     if (calendarRef?.current) {
       const calendarApi = calendarRef.current.getApi();
@@ -68,7 +90,7 @@ export const CalendarFull: React.FC<CalenderFullProps> = ({ date , setDayEvents}
   }, [date]);
 
   const handleDateClick = (arg: DateClickArg) => {
-    setDayEvents(events.filter((e)=>e?.date === arg.dateStr))
+    setDayEvents(events.filter((e) => e?.date === arg.dateStr));
   };
   return (
     <>
@@ -94,10 +116,15 @@ export const CalendarFull: React.FC<CalenderFullProps> = ({ date , setDayEvents}
 const renderEventContent: CustomContentGenerator<EventContentArg> = (
   eventInfo,
 ) => {
-  console.log("evnetinfo", eventInfo)
+  console.log("evnetinfo", eventInfo);
   return (
-    <div className={cn("bg-brand cursor-pointer", eventInfo?.event?.event_type && "bg-green-300")}>
-      <b>{eventInfo.event?.event_type}</b>
+    <div
+      className={cn(
+        "cursor-pointer bg-brand",
+        // eventInfo?.event?.event_type && "bg-green-300",
+      )}
+    >
+      {/* <b>{eventInfo.event?.event_type}</b> */}
       <i>{eventInfo.event.title}</i>
     </div>
   );

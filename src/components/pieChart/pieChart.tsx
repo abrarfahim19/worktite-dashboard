@@ -9,7 +9,7 @@ const data = [
   { name: "Finished Project", value: 200 },
 ];
 
-const renderActiveShape = (props) => {
+const renderActiveShape = (props: any) => {
   const RADIAN = Math.PI / 180;
   const {
     cx,
@@ -85,7 +85,7 @@ const renderActiveShape = (props) => {
 export const PieChartWithData = () => {
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const onPieEnter = (_, index) => {
+  const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
   };
 

@@ -1,6 +1,7 @@
 "use server";
 
 import { apiPost, apiRoutes } from "@/config/common";
+import axios from "axios";
 import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
 // import { cookies } from "next/headers";
@@ -61,7 +62,7 @@ export const login = async (loginInput: LoginInput) => {
       console.log("User Data", response.data.user);
     }
   } catch (error) {
-    if (error.isAxiosError) {
+    if (axios.isAxiosError(error)) {
       console.log(
         "Error from server axios error logging in",
         error.response?.status,

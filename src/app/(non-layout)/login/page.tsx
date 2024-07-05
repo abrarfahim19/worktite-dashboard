@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { login } from "@/lib/authLib";
 import { zodResolver } from "@hookform/resolvers/zod";
+import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -48,7 +49,7 @@ const Page = () => {
       });
       router.push("/dashboard");
     } catch (error) {
-      if (error.isAxiosError) {
+      if (axios.isAxiosError(error)) {
         console.error("Axios Error:", error);
         // Handle specific Axios errors (e.g., status codes)
       } else {
