@@ -162,6 +162,7 @@ const MessageBodyFooter = ({ mutate }: { mutate: KeyedMutator<any> }) => {
       <form onSubmit={form.handleSubmit(onSubmit)} className="mt-4">
         <FormField
           control={form.control}
+          disabled={chatId===0}
           name="message"
           render={({ field }) => (
             <FormItem className="flex h-12 items-center justify-start gap-2 self-center rounded-sm border-[1px] border-gray-600 p-2">
@@ -177,18 +178,18 @@ const MessageBodyFooter = ({ mutate }: { mutate: KeyedMutator<any> }) => {
         />
         <hr className="my-4" />
         <div className="mb-4 ml-4 flex gap-4">
-          <button>
+          <button disabled={chatId===0}>
             <Icons.microphone className="h-6 w-6" />
           </button>
-          <button>
+          <button disabled={chatId===0}>
             <Icons.emojie className="h-6 w-6" />
           </button>
-          <button>
+          <button  disabled={chatId===0}>
             <Icons.imageChat className="h-6 w-6" />
           </button>
           <Button
             type="submit"
-            disabled={searchParams.get("chat") === null}
+            disabled={chatId===0}
             variant={"outline"}
             className="h-12 rounded-sm border-brand text-brand"
           >

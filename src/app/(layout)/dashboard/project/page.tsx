@@ -15,7 +15,7 @@ import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {PLACE_HOLDER_IMAGE} from "@/config/common";
 import {apiRoutes} from "@/config/common/apiRoutes";
 import {STATUS} from "@/config/common/AppEnums";
-import {User} from "@/config/common/interfaces";
+import {IUser} from "@/config/common/interfaces";
 import {useAxiosSWR} from "@/hooks/useAxiosSwr";
 import {truncateText} from "@/lib/utils";
 import Image from "next/image";
@@ -64,7 +64,7 @@ interface IItems {
     description: string;
     price: string;
     created_by: number;
-    client: User;
+    client: IUser;
 }
 
 interface ProjectTab {

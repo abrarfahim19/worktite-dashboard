@@ -7,14 +7,14 @@ export interface IMAGE {
   created_by: number;
 }
 
-export interface Sender {
+export interface ISender {
   id: number;
   email: string;
   username: string | null;
-  details: UserDetails;
+  details: IUserDetails;
 }
 
-export interface UserDetails {
+export interface IUserDetails {
   name: string | null;
   contact_name: string | null;
   company_name: string | null;
@@ -27,15 +27,17 @@ export interface UserDetails {
   full_name: string | null;
 }
 
-export interface User {
+export interface IUser {
   id: number | string;
   email: string;
-  user_details: UserDetails;
+  user_details: IUserDetails;
 }
 
-export interface Chat {
+export interface IChat {
   id: number;
-  sender: Sender;
+  sender: ISender;
+  receiver: ISender;
+  created_at: string;
 }
 
 export interface IFiles {
@@ -89,7 +91,7 @@ export interface ITimeSlot {
   created_by: number;
 }
 
-export interface ClientStatus {
+export interface IClientStatus {
   id: number | string;
   title: string;
   is_active: boolean;
@@ -97,7 +99,7 @@ export interface ClientStatus {
   updated_at: string;
 }
 
-export interface Category {
+export interface ICategory {
   id: number;
   created_at: string;
   updated_at: string;
@@ -106,7 +108,7 @@ export interface Category {
   images: any;
 }
 
-export interface ProjectData {
+export interface IProjectData {
   id: number;
   created_at: string;
   updated_at: string;

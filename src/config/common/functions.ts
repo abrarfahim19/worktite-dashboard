@@ -89,6 +89,20 @@ export const debounce = (callback: (...args: any) => void, wait = 500) => {
   };
 };
 
+export function debounce2<T extends (...args: any[]) => void>(func: T, wait: number): (...args: Parameters<T>) => void {
+  let timeoutId: number | undefined;
+
+  return function(...args: Parameters<T>) {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+
+    timeoutId = window.setTimeout(() => {
+      func(...args);
+    }, wait);
+  };
+}
+
 export const priceTypeConv = (type: PRICINGTYPE) => {
   if (type === PRICINGTYPE.HOURLY_BASIS) {
     return "Hourly";
@@ -210,12 +224,12 @@ export const encodeDataToBase64 = (data: { [key: string]: any }): string => {
   return Buffer.from(jsonString).toString("base64");
 };
 
-export const decodeDataFromBase64 = (
+export const decodeDataFromBase64 = <T>(
   base64String: string,
-): Record<string, any> | null => {
+): T | null => {
   try {
     const jsonString = atob(base64String);
-    return JSON.parse(jsonString);
+    return JSON.parse(jsonString) as T;
   } catch (error) {
     console.error("Failed to decode and parse data:", error);
     return null;
